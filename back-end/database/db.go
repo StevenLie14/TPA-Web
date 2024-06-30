@@ -18,12 +18,15 @@ func ConnectDB(config *config.Config) *gorm.DB {
 		return nil
 	}
 	err = gormDB.AutoMigrate(
-		&model.Career{},
 		&model.User{},
-		&model.Rooms{},
-		&model.RoomDetail{},
-		&model.MessageRead{},
-		&model.Message{},
+		&model.Follow{},
+		&model.Album{},
+		&model.Song{},
+		&model.Play{},
+		&model.PlaylistDetails{},
+		&model.Playlist{},
+
+		//&model.Advertisement{},
 	)
 	if err != nil {
 		utils.CheckError(err)

@@ -1,10 +1,9 @@
-import logo from '../assets/NJOTIFY.png';
 
 export const Navbar = () => {
     return(
         <nav>
             <div className={"left"}>
-                <img className={"logo"} src={logo} alt={""}/>
+                <img className={"logo"} src={"./assets/NJOTIFY.png"} alt={""}/>
             </div>
             <div className={"right"}>
 

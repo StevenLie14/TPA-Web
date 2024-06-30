@@ -1,10 +1,10 @@
 import {useState} from "react";
 import * as React from "react";
-import {useAuth} from "../context/AuthProvider.tsx";
 import {Navbar} from "../component/Navbar.tsx";
 import {Footer} from "../component/Footer.tsx";
 import {Link} from "react-router-dom";
 import ErrorModal from "../component/ErrorModal.tsx";
+import {useAuth} from "../context/UseAuth.tsx";
 
 export const RegisterPage = () => {
     const {register,googleLogin} = useAuth()

@@ -1,8 +1,8 @@
-import {useAuth} from "../context/AuthProvider.tsx";
 import {ChangeEvent, useState} from "react";
 import {Navbar} from "../component/Navbar.tsx";
 import {Footer} from "../component/Footer.tsx";
 import {Link} from "react-router-dom";
+import {useAuth} from "../context/UseAuth.tsx";
 
 export const LoginPage = () => {
     const {login,googleLogin} = useAuth()

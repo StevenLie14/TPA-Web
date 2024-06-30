@@ -230,6 +230,32 @@ func (u *UserController) Register(ctx *gin.Context) {
 
 }
 
+func (u *UserController) GetUserById(ctx *gin.Context) {
+	id := ctx.Query("id")
+	user, err := u.UserService.GetUserById(id)
+	if err != nil {
+		webResponse := response.WebResponse{
+			Code:    http.StatusBadRequest,
+			Message: err.Error(),
+			Data:    nil,
+		}
+
+		ctx.Header("Content-Type", "application/json")
+		ctx.JSON(http.StatusBadRequest, webResponse)
+		return
+	}
+
+	webResponse := response.WebResponse{
+		Code:    http.StatusOK,
+		Message: "OK",
+		Data:    user,
+	}
+
+	ctx.Header("Content-Type", "application/json")
+	ctx.JSON(http.StatusOK, webResponse)
+
+}
+
 //func (c *CareerController) FindAll(ctx *gin.Context) {
 //	fmt.Println("Hello World!")
 //	careers := c.careerService.FindAll()

@@ -24,16 +24,32 @@ func main() {
 
 	validate := validator.New()
 
-	careerRepository := repository.NewCareerRepositoryImpl(db)
-	careerService := services.NewCareerServiceImpl(careerRepository, validate)
-	careerController := controller.NewCareerController(careerService)
+	//careerRepository := repository.NewCareerRepositoryImpl(db)
+	//careerService := services.NewCareerServiceImpl(careerRepository, validate)
+	//careerController := controller.NewCareerController(careerService)
 
 	userRepository := repository.NewUserRepositoryImpl(db, redis)
 	userService := services.NewUserServiceImpl(userRepository, validate)
 	userController := controller.NewUserController(userService, google)
 
+	playListRepository := repository.NewPlaylistRepositoryImpl(db, redis)
+	playListService := services.NewPlaylistServiceImpl(playListRepository, validate)
+	playListController := controller.NewPlaylistController(playListService)
+
+	followRepository := repository.NewFollowRepositoryImpl(db, redis)
+	followService := services.NewFollowServiceImpl(followRepository, validate)
+	followController := controller.NewFollowController(followService)
+
+	songRepository := repository.NewSongRepositoryImpl(db, redis)
+	songService := services.NewSongServiceImpl(songRepository, validate)
+	songController := controller.NewSongController(songService)
+
+	albumRepository := repository.NewAlbumRepositoryImpl(db, redis)
+	albumService := services.NewAlbumServiceImpl(albumRepository, validate)
+	albumController := controller.NewAlbumController(albumService)
+
 	notificationChannel := sse.NewNotification(userService)
-	r := router.NewRouter(careerController, userController, notificationChannel)
+	r := router.NewRouter(playListController, userController, notificationChannel, followController, songController, albumController)
 
 	server := &http.Server{
 		Addr:    cnf.Server.Port,

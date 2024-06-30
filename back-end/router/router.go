@@ -12,7 +12,7 @@ import (
 	"time"
 )
 
-func NewRouter(career *controller.CareerController, user *controller.UserController, h *sse.NotificationSSE) *gin.Engine {
+func NewRouter(playlist *controller.PlaylistController, user *controller.UserController, h *sse.NotificationSSE, follow *controller.FollowController, song *controller.SongController, album *controller.AlbumController) *gin.Engine {
 	router := gin.Default()
 
 	router.Use(cors.New(cors.Config{
@@ -30,15 +30,33 @@ func NewRouter(career *controller.CareerController, user *controller.UserControl
 	router.POST("/user/login", user.Authenticate)
 	router.GET("/user/current-user", user.GetCurrentUser)
 	router.GET("/user/update-ver", user.UpdateVerificationStatus)
-	router.PUT("/user/register", user.Register)
 	router.GET("/auth/google/callback", user.GoogleCallback)
+	router.PUT("/user/register", user.Register)
+	router.GET("/user/get", user.GetUserById)
 
-	careerGroup := router.Group("/career")
-	careerGroup.Use(middleware.RoleMiddleware(user.UserService, "JLA"))
-	{
-		careerGroup.POST("/", career.Create)
-		careerGroup.GET("/", career.FindAll)
-	}
+	router.GET("/playlist", playlist.GetPlaylistByUserId)
+	router.GET("/playlist-id", playlist.GetPlaylistById)
+
+	router.GET("/get-following", follow.GetFollowing)
+	router.GET("/get-follower", follow.GetFollower)
+	router.GET("/get-mutual", follow.GetMutualFollowing)
+	router.PUT("/follow", follow.Create)
+	router.DELETE("/follow", follow.DeleteFollow)
+
+	router.GET("/album/get-title", album.GetAlbumByTitle)
+	router.GET("/album/get-artist", album.GetAlbumByArtist)
+
+	router.GET("/song/get-all", song.GetAllSong)
+	router.GET("/song/get", song.GetSongById)
+	router.GET("/song/get-by-artist", song.GetSongByArtist)
+	router.GET("/song/get-by-album", song.GetSongByAlbum)
+
+	//careerGroup := router.Group("/career")
+	//careerGroup.Use(middleware.RoleMiddleware(user.UserService, "JLA"))
+	//{
+	//	careerGroup.POST("/", career.Create)
+	//	careerGroup.GET("/", career.FindAll)
+	//}
 
 	authGroup := router.Group("/auth")
 	authGroup.Use(middleware.AuthMiddleware(user.UserService))
@@ -46,8 +64,8 @@ func NewRouter(career *controller.CareerController, user *controller.UserControl
 		authGroup.GET("/user", user.GetCurrentUser)
 	}
 
-	router.POST("/career", middleware.AuthMiddleware(user.UserService), career.Create)
-	router.GET("/career", middleware.RoleMiddleware(user.UserService, "JLA"), career.FindAll)
+	//router.POST("/career", middleware.AuthMiddleware(user.UserService), career.Create)
+	//router.GET("/career", middleware.RoleMiddleware(user.UserService, "JLA"), career.FindAll)
 
 	router.GET("sse/notification-stream", h.StreamNotification)
 

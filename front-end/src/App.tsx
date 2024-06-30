@@ -14,6 +14,13 @@ import {GoogleOAuthProvider} from "@react-oauth/google";
 import {ForgotPasswordPage} from "./route/ForgotPasswordPage.tsx";
 import {ResetPasswordPage} from "./route/ResetPasswordPage.tsx";
 import {VerifyEmail} from "./route/VerifyEmail.tsx";
+import {SongProvider} from "./context/SongProvider.tsx";
+import {SearchPage} from "./route/SearchPage.tsx";
+import {ProfilePage} from "./route/ProfilePage.tsx";
+import {ArtistPage} from "./route/ArtistPage.tsx";
+import {TrackPage} from "./route/TrackPage.tsx";
+import {AlbumPage} from "./route/AlbumPage.tsx";
+import {PlaylistPage} from "./route/PlaylistPage.tsx";
 
 function App() {
 
@@ -22,15 +29,23 @@ function App() {
           <GoogleOAuthProvider clientId={"841490014876-nc1omea8apsbevhcouqgbhq9mmc5tq7k.apps.googleusercontent.com"}>
               <ThemeProvider>
                   <AuthProvider>
-                      <Routes>
-                          <Route path="/home" element={<HomePage/>} />
-                          <Route path="/login" element={<LoginPage/>} />
-                          <Route path="/register" element={<RegisterPage/>} />
-                          <Route path="/forgot" element={<ForgotPasswordPage/>} />
-                          <Route path="/reset-pass" element={<ResetPasswordPage/>} />
-                          <Route path="/verify-email" element={<VerifyEmail/>} />
-                          {/*<Route path="/chat" element={<ChatPage/>} />*/}
-                      </Routes>
+                    <SongProvider>
+                          <Routes>
+                              <Route path="/home" element={<HomePage/>} />
+                              <Route path="/search" element={<SearchPage/>} />
+                              <Route path="/profile/:id" element={<ProfilePage/>} />
+                              <Route path="/artist/:id" element={<ArtistPage/>} />
+                              <Route path="/track/:id" element={<TrackPage/>} />
+                              <Route path="/album/:id" element={<AlbumPage/>} />
+                              <Route path="/playlist/:id" element={<PlaylistPage/>} />
+                              <Route path="/login" element={<LoginPage/>} />
+                              <Route path="/register" element={<RegisterPage/>} />
+                              <Route path="/forgot" element={<ForgotPasswordPage/>} />
+                              <Route path="/reset-pass" element={<ResetPasswordPage/>} />
+                              <Route path="/verify-email" element={<VerifyEmail/>} />
+                              {/*<Route path="/chat" element={<ChatPage/>} />*/}
+                          </Routes>
+                    </SongProvider>
                   </AuthProvider>
               </ThemeProvider>
           </GoogleOAuthProvider>

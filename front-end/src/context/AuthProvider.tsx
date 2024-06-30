@@ -1,4 +1,4 @@
-import {createContext, ReactNode, useContext, useEffect, useState} from "react";
+import {createContext, ReactNode, useEffect, useState} from "react";
 import axios, {AxiosResponse} from "axios";
 import {useGoogleLogin} from "@react-oauth/google";
 import {useNavigate} from "react-router-dom";
@@ -12,7 +12,7 @@ interface IProps{
     googleLogin : () => void
 }
 
-const AuthContext = createContext<IProps>({} as IProps)
+export const AuthContext = createContext<IProps>({} as IProps)
 
 
 export const AuthProvider = ({children} : {children : ReactNode}) => {
@@ -34,8 +34,8 @@ export const AuthProvider = ({children} : {children : ReactNode}) => {
         })
             .then((res) => res.json())
             .then((data) => {
-                console.log(data);
-                setUser(data);
+                console.log(data.data);
+                setUser(data.data);
                 const eventSource = new EventSource('http://localhost:4000/sse/notification-stream');
 
                 eventSource.onmessage = function(event) {
@@ -111,7 +111,7 @@ export const AuthProvider = ({children} : {children : ReactNode}) => {
                         'Content-Type': 'application/json'
                     },
                     withCredentials: true
-                }).then((res : AxiosResponse<AuthResponse>) => {
+                }).then((res : AxiosResponse<WebResponse<User>>) => {
                 console.log(res.data.data)
                 navigate("/home")
             }).catch((err) => {
@@ -137,4 +137,3 @@ export const AuthProvider = ({children} : {children : ReactNode}) => {
     )
 }
 
-export const useAuth = () =>  useContext(AuthContext)

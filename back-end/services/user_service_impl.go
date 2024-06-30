@@ -72,11 +72,14 @@ func (u UserServiceImpl) Register(req request.AuthRequest) (res response.UserRes
 		user = model.User{
 			UserId:     utils.GenerateUUID(),
 			Username:   "st",
-			Email:      req.Email,
-			Role:       "tes aja",
 			Password:   &hashedPassword,
 			GoogleId:   nil,
+			Role:       "Listener",
 			VerifiedAt: nil,
+			Email:      req.Email,
+			Gender:     nil,
+			Country:    nil,
+			Avatar:     nil,
 		}
 		err = u.UserRepository.Save(user)
 		if err != nil {
@@ -93,7 +96,7 @@ func (u UserServiceImpl) Register(req request.AuthRequest) (res response.UserRes
 }
 
 func (u UserServiceImpl) UpdateVerificationStatus(id string) error {
-	user, err := u.UserRepository.FindByID(id)
+	user, err := u.UserRepository.FindUserByID(id)
 	if err != nil {
 		return err
 	}
@@ -109,7 +112,7 @@ func (u UserServiceImpl) UpdateVerificationStatus(id string) error {
 func (u UserServiceImpl) GetCurrentUser(cookie string) (res response.UserResponse, err error) {
 	userId, err := utils.GetJWTClaims(cookie)
 
-	user, err := u.UserRepository.FindByID(userId)
+	user, err := u.UserRepository.FindUserByID(userId)
 	if err != nil {
 		return response.UserResponse{}, utils.UserNotFound
 	}
@@ -127,11 +130,14 @@ func (u UserServiceImpl) LoginWithGoogle(req request.GoogleRequest) (res respons
 	user := model.User{
 		UserId:     utils.GenerateUUID(),
 		Username:   req.Username,
-		Email:      req.Email,
-		Role:       "user",
-		GoogleId:   &req.GoogleId,
 		Password:   nil,
+		GoogleId:   &req.GoogleId,
+		Role:       "Listener",
 		VerifiedAt: &now,
+		Email:      req.Email,
+		Gender:     nil,
+		Country:    nil,
+		Avatar:     nil,
 	}
 
 	user2, err := u.UserRepository.FindByEmail(req.Email)
@@ -141,6 +147,7 @@ func (u UserServiceImpl) LoginWithGoogle(req request.GoogleRequest) (res respons
 		if err != nil {
 			return response.AuthResponse{}, err
 		}
+		user = user2
 	} else {
 		err = u.UserRepository.Save(user)
 		if err != nil {
@@ -158,5 +165,22 @@ func (u UserServiceImpl) LoginWithGoogle(req request.GoogleRequest) (res respons
 		Email:    user.Email,
 		Role:     user.Role,
 		Token:    token,
+	}, nil
+}
+
+func (u UserServiceImpl) GetUserById(id string) (res response.UserResponse, err error) {
+	user, err := u.UserRepository.FindUserByID(id)
+	if err != nil {
+		return response.UserResponse{}, utils.UserNotFound
+	}
+	return response.UserResponse{
+		UserId:      user.UserId,
+		Username:    user.Username,
+		Email:       user.Email,
+		Role:        user.Role,
+		Avatar:      user.Avatar,
+		Country:     user.Country,
+		Gender:      user.Gender,
+		Description: user.Description,
 	}, nil
 }

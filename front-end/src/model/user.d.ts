@@ -1,6 +1,12 @@
 interface User{
+    user_id: string;
     username: string;
     email: string;
+    role: string;
+    avatar: string;
+    country: string;
+    gender: string;
+    description : string;
 }
 
 interface LoginProps{
@@ -22,8 +28,8 @@ interface AuthProps{
     user_id: string;
 }
 
-interface AuthResponse{
+interface WebResponse<T>{
     status: string;
     message: string;
-    data : AuthProps
+    data : T;
 }
