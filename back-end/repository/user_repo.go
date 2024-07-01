@@ -10,5 +10,4 @@ type UserRepository interface {
 	FindByEmailAndVerified(email string, verified bool) (user model.User, err error)
 	Update(user model.User) (err error)
 	Delete(user model.User)
-	FindArtistByName(name string) (users []model.User, err error)
 }

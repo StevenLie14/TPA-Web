@@ -48,8 +48,16 @@ func main() {
 	albumService := services.NewAlbumServiceImpl(albumRepository, validate)
 	albumController := controller.NewAlbumController(albumService)
 
+	queueRepository := repository.NewQueueRepositoryImpl(redis)
+	queueService := services.NewQueueServiceImpl(queueRepository, validate)
+	queueController := controller.NewQueueController(queueService)
+
+	playRepository := repository.NewPlayRepositoryImpl(db, redis)
+	playService := services.NewPlayServiceImpl(playRepository, validate)
+	playController := controller.NewPlayController(playService)
+
 	notificationChannel := sse.NewNotification(userService)
-	r := router.NewRouter(playListController, userController, notificationChannel, followController, songController, albumController)
+	r := router.NewRouter(playListController, userController, notificationChannel, followController, songController, albumController, queueController, playController)
 
 	server := &http.Server{
 		Addr:    cnf.Server.Port,

@@ -6,11 +6,11 @@ import (
 )
 
 type Album struct {
-	AlbumId string `gorm:"primaryKey"`
-	UserId  string
-	Title   string
-	Type    string
-	Banner  string
-	Release time.Time
-	User    response.UserResponse `gorm:"foreignKey:UserId;references:UserId;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
+	AlbumId  string `gorm:"primaryKey"`
+	ArtistId string
+	Title    string
+	Type     string
+	Banner   string
+	Release  time.Time
+	Artist   response.ArtistResponse `gorm:"foreignKey:ArtistId;references:ArtistId;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
 }

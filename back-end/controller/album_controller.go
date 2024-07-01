@@ -64,3 +64,27 @@ func (a AlbumController) GetAlbumByArtist(ctx *gin.Context) {
 	ctx.Header("Content-Type", "application/json")
 	ctx.JSON(http.StatusOK, webResponse)
 }
+
+func (a AlbumController) GetRandomAlbum(ctx *gin.Context) {
+	res, err := a.AlbumService.GetRandomAlbum()
+	if err != nil {
+		webResponse := response.WebResponse{
+			Code:    http.StatusBadRequest,
+			Message: err.Error(),
+			Data:    nil,
+		}
+
+		ctx.Header("Content-Type", "application/json")
+		ctx.JSON(http.StatusBadRequest, webResponse)
+		return
+	}
+
+	webResponse := response.WebResponse{
+		Code:    http.StatusOK,
+		Message: "OK",
+		Data:    res,
+	}
+
+	ctx.Header("Content-Type", "application/json")
+	ctx.JSON(http.StatusOK, webResponse)
+}

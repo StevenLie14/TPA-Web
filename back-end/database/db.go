@@ -18,6 +18,7 @@ func ConnectDB(config *config.Config) *gorm.DB {
 		return nil
 	}
 	err = gormDB.AutoMigrate(
+		&model.Artist{},
 		&model.User{},
 		&model.Follow{},
 		&model.Album{},

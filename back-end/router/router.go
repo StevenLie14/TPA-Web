@@ -12,7 +12,7 @@ import (
 	"time"
 )
 
-func NewRouter(playlist *controller.PlaylistController, user *controller.UserController, h *sse.NotificationSSE, follow *controller.FollowController, song *controller.SongController, album *controller.AlbumController) *gin.Engine {
+func NewRouter(playlist *controller.PlaylistController, user *controller.UserController, h *sse.NotificationSSE, follow *controller.FollowController, song *controller.SongController, album *controller.AlbumController, queue *controller.QueueController, play *controller.PlayController) *gin.Engine {
 	router := gin.Default()
 
 	router.Use(cors.New(cors.Config{
@@ -28,6 +28,7 @@ func NewRouter(playlist *controller.PlaylistController, user *controller.UserCon
 	router.GET("/ws/chat", pool.Chat)
 
 	router.POST("/user/login", user.Authenticate)
+	router.POST("/user/edit-prof", user.UpdateUserProfile)
 	router.GET("/user/current-user", user.GetCurrentUser)
 	router.GET("/user/update-ver", user.UpdateVerificationStatus)
 	router.GET("/auth/google/callback", user.GoogleCallback)
@@ -45,11 +46,20 @@ func NewRouter(playlist *controller.PlaylistController, user *controller.UserCon
 
 	router.GET("/album/get-title", album.GetAlbumByTitle)
 	router.GET("/album/get-artist", album.GetAlbumByArtist)
+	router.GET("/album/get-random", album.GetRandomAlbum)
 
 	router.GET("/song/get-all", song.GetAllSong)
 	router.GET("/song/get", song.GetSongById)
 	router.GET("/song/get-by-artist", song.GetSongByArtist)
 	router.GET("/song/get-by-album", song.GetSongByAlbum)
+
+	router.GET("/queue/clear", queue.ClearQueue)
+	router.POST("/queue/enqueue", queue.Enqueue)
+	router.GET("/queue/dequeue", queue.Dequeue)
+	router.GET("/queue/get", queue.GetQueue)
+	router.GET("/queue/get-all", queue.GetAllQueue)
+
+	router.GET("/play/get-last", play.GetLastPlayedSongByUser)
 
 	//careerGroup := router.Group("/career")
 	//careerGroup.Use(middleware.RoleMiddleware(user.UserService, "JLA"))

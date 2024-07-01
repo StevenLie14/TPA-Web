@@ -1,8 +1,16 @@
 package request
 
+import "time"
+
 type UserRequest struct {
 	Username string `json:"username" validate:"required"`
 	Password string `json:"password" validate:"required"`
 	Email    string `json:"email" validate:"required,email"`
-	Role     string `json:"role" validate:"required"`
+}
+
+type UserUpdateRequest struct {
+	UserId  string    `json:"userId" validate:"required"`
+	Gender  string    `json:"gender" validate:"required"`
+	Country string    `json:"country" validate:"required"`
+	Dob     time.Time `json:"dob" validate:"required"`
 }

@@ -12,4 +12,5 @@ type UserService interface {
 	LoginWithGoogle(req request.GoogleRequest) (res response.AuthResponse, err error)
 	UpdateVerificationStatus(id string) (err error)
 	GetUserById(id string) (res response.UserResponse, err error)
+	UpdateUserProfile(req request.UserUpdateRequest) (res response.UserResponse, err error)
 }

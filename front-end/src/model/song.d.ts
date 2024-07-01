@@ -1,7 +1,7 @@
 interface Song{
     songId : string
     title : string
-    userId : string
+    artistId : string
     albumId : string
     genre   : string
     releaseDate : string
@@ -9,7 +9,7 @@ interface Song{
     file : string
     image : string
     play : Play[]
-    user : User
+    artist : Artist
     album : Album
     songAudio : HTMLAudioElement
 

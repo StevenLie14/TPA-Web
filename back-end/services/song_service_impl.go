@@ -23,16 +23,16 @@ func (s SongServiceImpl) GetAllSong() (res []response.SongResponse, err error) {
 		res = append(res, response.SongResponse{
 			SongId:      v.SongId,
 			Title:       v.Title,
-			UserId:      v.UserId,
 			Album:       v.Album,
 			AlbumId:     v.AlbumId,
 			Genre:       v.Genre,
 			ReleaseDate: v.ReleaseDate,
 			Duration:    v.Duration,
 			File:        v.File,
-			User:        v.User,
 			Play:        v.Play,
 			Image:       v.Image,
+			ArtistId:    v.ArtistId,
+			Artist:      v.Artist,
 		})
 	}
 	return
@@ -46,16 +46,16 @@ func (s SongServiceImpl) GetSongById(id string) (res response.SongResponse, err 
 	res = response.SongResponse{
 		SongId:      resp.SongId,
 		Title:       resp.Title,
-		UserId:      resp.UserId,
 		Album:       resp.Album,
 		AlbumId:     resp.AlbumId,
 		Genre:       resp.Genre,
 		ReleaseDate: resp.ReleaseDate,
 		Duration:    resp.Duration,
 		File:        resp.File,
-		User:        resp.User,
 		Play:        resp.Play,
 		Image:       resp.Image,
+		ArtistId:    resp.ArtistId,
+		Artist:      resp.Artist,
 	}
 	return
 
@@ -70,16 +70,16 @@ func (s SongServiceImpl) GetSongByArtist(artistId string) (res []response.SongRe
 		res = append(res, response.SongResponse{
 			SongId:      v.SongId,
 			Title:       v.Title,
-			UserId:      v.UserId,
 			Album:       v.Album,
 			AlbumId:     v.AlbumId,
 			Genre:       v.Genre,
 			ReleaseDate: v.ReleaseDate,
 			Duration:    v.Duration,
 			File:        v.File,
-			User:        v.User,
 			Play:        v.Play,
 			Image:       v.Image,
+			ArtistId:    v.ArtistId,
+			Artist:      v.Artist,
 		})
 	}
 	return
@@ -91,16 +91,16 @@ func (s SongServiceImpl) GetSongByAlbum(albumId string) (res []response.SongResp
 		res = append(res, response.SongResponse{
 			SongId:      v.SongId,
 			Title:       v.Title,
-			UserId:      v.UserId,
 			Album:       v.Album,
 			AlbumId:     v.AlbumId,
 			Genre:       v.Genre,
 			ReleaseDate: v.ReleaseDate,
 			Duration:    v.Duration,
 			File:        v.File,
-			User:        v.User,
 			Play:        v.Play,
 			Image:       v.Image,
+			ArtistId:    v.ArtistId,
+			Artist:      v.Artist,
 		})
 	}
 	return

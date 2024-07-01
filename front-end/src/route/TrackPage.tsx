@@ -21,7 +21,7 @@ export const TrackPage = () => {
            const songs = res.data.data
            setSong(res.data.data)
            console.log(songs)
-           axios.get("http://localhost:4000/song/get-by-artist?id="+songs.userId).then((res : AxiosResponse<WebResponse<Song[]>>) => {
+           axios.get("http://localhost:4000/song/get-by-artist?id="+songs.artistId).then((res : AxiosResponse<WebResponse<Song[]>>) => {
                setTopTrack(res.data.data)
            }).catch((err) => {
                console.log(err)
@@ -32,6 +32,30 @@ export const TrackPage = () => {
            }).catch((err) => {
                console.log(err)
            })
+
+           // axios.post("http://localhost:4000/queue/enqueue",{
+           //     songId : songs.songId,
+           //     title : songs.title,
+           //     artistId : songs.artistId,
+           //      albumId : songs.albumId,
+           //     genre : songs.genre,
+           //      releaseDate : songs.releaseDate,
+           //      duration : songs.duration,
+           //      file : songs.file,
+           //      image : songs.image,
+           //      play : songs.play,
+           //      artist : songs.artist,
+           //      album : songs.album,
+           // }).then((res) => {
+           //     console.log(res)
+           // })
+
+           // axios.get("http://localhost:4000/queue/dequeue",).then((res) => {
+           //     console.log(res)
+           // })
+           // axios.get("http://localhost:4000/queue/get-all",).then((res) => {
+           //     console.log(res)
+           // })
        }).catch((err) => {
            console.log(err)
        })
@@ -67,7 +91,7 @@ export const TrackPage = () => {
                         <p>Popular tracks by</p>
                         <h2>{song.user?.username}</h2>
                         <div className="cardWrapper">
-                            {topTrack.slice(0, 5).map((song, index) => (
+                            {topTrack && topTrack.slice(0, 5).map((song, index) => (
                                 <SongTable song={song} index={index}/>
                             ))}
                         </div>
@@ -81,7 +105,7 @@ export const TrackPage = () => {
                     </div>
                     <div className={"albumSong"}>
                         <div className="cardWrapper">
-                            {albumSong.slice(0, 5).map((song, index) => (
+                            {albumSong && albumSong.slice(0, 5).map((song, index) => (
                                 <AlbumTable song={song} index={index}/>
                             ))}
                         </div>

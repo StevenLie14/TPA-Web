@@ -121,6 +121,10 @@ func (u UserServiceImpl) GetCurrentUser(cookie string) (res response.UserRespons
 		Username: user.Username,
 		Email:    user.Email,
 		Role:     user.Role,
+		Avatar:   user.Avatar,
+		Country:  user.Country,
+		Gender:   user.Gender,
+		Dob:      user.Dob,
 	}, nil
 
 }
@@ -138,6 +142,7 @@ func (u UserServiceImpl) LoginWithGoogle(req request.GoogleRequest) (res respons
 		Gender:     nil,
 		Country:    nil,
 		Avatar:     nil,
+		Dob:        nil,
 	}
 
 	user2, err := u.UserRepository.FindByEmail(req.Email)
@@ -174,13 +179,48 @@ func (u UserServiceImpl) GetUserById(id string) (res response.UserResponse, err 
 		return response.UserResponse{}, utils.UserNotFound
 	}
 	return response.UserResponse{
-		UserId:      user.UserId,
-		Username:    user.Username,
-		Email:       user.Email,
-		Role:        user.Role,
-		Avatar:      user.Avatar,
-		Country:     user.Country,
-		Gender:      user.Gender,
-		Description: user.Description,
+		UserId:   user.UserId,
+		Username: user.Username,
+		Email:    user.Email,
+		Role:     user.Role,
+		Avatar:   user.Avatar,
+		Country:  user.Country,
+		Gender:   user.Gender,
+		Dob:      user.Dob,
 	}, nil
+}
+
+func (u UserServiceImpl) UpdateUserProfile(req request.UserUpdateRequest) (res response.UserResponse, err error) {
+	err = u.Validate.Struct(req)
+	if err != nil {
+		return response.UserResponse{}, err
+	}
+
+	user, err := u.UserRepository.FindUserByID(req.UserId)
+	if err != nil {
+		return response.UserResponse{}, utils.UserNotFound
+	}
+
+	user.Dob = &req.Dob
+	user.Country = &req.Country
+	user.Gender = &req.Gender
+
+	err = u.UserRepository.Update(user)
+	if err != nil {
+		return response.UserResponse{}, err
+	}
+
+	res = response.UserResponse{
+		UserId:   user.UserId,
+		Username: user.Username,
+		Email:    user.Email,
+		Role:     user.Role,
+		Avatar:   user.Avatar,
+		Dob:      &req.Dob,
+		Country:  &req.Country,
+		Gender:   &req.Gender,
+	}
+
+	return
+
 }

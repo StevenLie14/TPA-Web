@@ -3,6 +3,7 @@ package database
 import (
 	"back-end/config"
 	"context"
+	"errors"
 	"github.com/redis/go-redis/v9"
 	"time"
 )
@@ -36,4 +37,48 @@ func (r Redis) Get(key string) (string, error) {
 
 func (r Redis) Set(key string, entry string) error {
 	return r.rdb.Set(context.Background(), key, entry, 15*time.Minute).Err()
+}
+
+func (r Redis) Del(key string) error {
+	_, err := r.rdb.Del(context.Background(), key).Result()
+	return err
+}
+
+func (r Redis) RPush(key string, values ...interface{}) error {
+	_, err := r.rdb.RPush(context.Background(), key, values...).Result()
+	return err
+}
+
+func (r Redis) LPop(key string) ([]byte, error) {
+	val, err := r.rdb.LPop(context.Background(), key).Bytes()
+	if errors.Is(err, redis.Nil) {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+	return val, nil
+}
+
+func (r Redis) LIndex(key string, index int64) ([]byte, error) {
+	val, err := r.rdb.LIndex(context.Background(), key, index).Bytes()
+	if errors.Is(err, redis.Nil) {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+	return val, nil
+}
+
+func (r Redis) LRange(key string, start, stop int64) ([][]byte, error) {
+	vals, err := r.rdb.LRange(context.Background(), key, start, stop).Result()
+	if err != nil {
+		return nil, err
+	}
+	byteVals := make([][]byte, len(vals))
+	for i, val := range vals {
+		byteVals[i] = []byte(val)
+	}
+	return byteVals, nil
 }

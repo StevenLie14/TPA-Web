@@ -4,6 +4,6 @@ interface Album{
     type : string
     banner : string
     release : string
-    userId : string
-    User : User
+    artistId : string
+    artist : Artist
 }

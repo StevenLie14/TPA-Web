@@ -23,13 +23,13 @@ func (a AlbumServiceImpl) GetAlbumsByTitle(title string) (res []response.AlbumRe
 	}
 	for _, album := range resp {
 		res = append(res, response.AlbumResponse{
-			AlbumId: album.AlbumId,
-			Title:   album.Title,
-			Type:    album.Type,
-			Banner:  album.Banner,
-			Release: album.Release,
-			UserId:  album.UserId,
-			User:    album.User,
+			AlbumId:  album.AlbumId,
+			Title:    album.Title,
+			Type:     album.Type,
+			Banner:   album.Banner,
+			Release:  album.Release,
+			Artist:   album.Artist,
+			ArtistId: album.ArtistId,
 		})
 	}
 	return res, nil
@@ -42,13 +42,32 @@ func (a AlbumServiceImpl) GetAlbumsByArtist(artistId string) (res []response.Alb
 	}
 	for _, album := range resp {
 		res = append(res, response.AlbumResponse{
-			AlbumId: album.AlbumId,
-			Title:   album.Title,
-			Type:    album.Type,
-			Banner:  album.Banner,
-			Release: album.Release,
-			UserId:  album.UserId,
-			User:    album.User,
+			AlbumId:  album.AlbumId,
+			Title:    album.Title,
+			Type:     album.Type,
+			Banner:   album.Banner,
+			Release:  album.Release,
+			Artist:   album.Artist,
+			ArtistId: album.ArtistId,
+		})
+	}
+	return res, nil
+}
+
+func (a AlbumServiceImpl) GetRandomAlbum() (res []response.AlbumResponse, err error) {
+	resp, err := a.AlbumRepository.GetRandomAlbum()
+	if err != nil {
+		return nil, err
+	}
+	for _, album := range resp {
+		res = append(res, response.AlbumResponse{
+			AlbumId:  album.AlbumId,
+			Title:    album.Title,
+			Type:     album.Type,
+			Banner:   album.Banner,
+			Release:  album.Release,
+			Artist:   album.Artist,
+			ArtistId: album.ArtistId,
 		})
 	}
 	return res, nil

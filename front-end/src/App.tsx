@@ -21,6 +21,11 @@ import {ArtistPage} from "./route/ArtistPage.tsx";
 import {TrackPage} from "./route/TrackPage.tsx";
 import {AlbumPage} from "./route/AlbumPage.tsx";
 import {PlaylistPage} from "./route/PlaylistPage.tsx";
+import {EditProfilePage} from "./route/EditProfilePage.tsx";
+import {GetVerifiedPage} from "./route/GetVerifiedPage.tsx";
+import {ArtistVerificationPage} from "./route/ArtistVerificationPage.tsx";
+import {YourPostPage} from "./route/YourPostPage.tsx";
+import {CreateMusicPage} from "./route/CreateMusicPage.tsx";
 
 function App() {
 
@@ -38,6 +43,11 @@ function App() {
                               <Route path="/track/:id" element={<TrackPage/>} />
                               <Route path="/album/:id" element={<AlbumPage/>} />
                               <Route path="/playlist/:id" element={<PlaylistPage/>} />
+                              <Route path="/user/edit/" element={<EditProfilePage/>} />
+                              <Route path="/get-verified/" element={<GetVerifiedPage/>} />
+                              <Route path="/artist/verif" element={<ArtistVerificationPage/>} />
+                              <Route path="/your-post" element={<YourPostPage/>} />
+                              <Route path="/create/music" element={<CreateMusicPage/>} />
                               <Route path="/login" element={<LoginPage/>} />
                               <Route path="/register" element={<RegisterPage/>} />
                               <Route path="/forgot" element={<ForgotPasswordPage/>} />

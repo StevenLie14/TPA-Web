@@ -66,7 +66,6 @@ $layout-margin-looser: 64px;
 
 
   .logo {
-
     border-radius: $corner-radius-base;
     background: $background-elevated-base;
     color: $text-base;
@@ -223,12 +222,248 @@ main{
   border-radius: $corner-radius-base;
   flex-direction: column;
 
+  .plusMinus{
+    display: flex;
+    justify-content: flex-end;
+    margin: 1rem 10rem;
+    gap: 3rem;
+    .logoWrapper{
+      background: $background-elevated-base;
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      &:active{
+        background: $background-tinted-base;
+        transform: scale(0.8);
+      }
+    }
+  }
+  .saveButton {
+    display: flex;
+    width: 90%;
+    padding: 1rem;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 1rem;
+
+
+    .createMusic{
+      padding: 10px 30px;
+      background: $essential-positive;
+      font-size: 1rem;
+      font-weight: 600;
+      border-radius: $corner-radius-larger-3;
+      color: $background-press;
+      cursor: pointer;
+      border: 0;
+      transition: all 0.2s ease;
+      &:hover{
+        color: $text-base;
+        background: $background-tinted-highlight;
+      }
+      &:active{
+        transform: scale(0.9);
+      }
+    }
+
+    a {
+      color: $text-base;
+      font-size: 1rem;
+      text-decoration: none;
+
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+  }
+
+  .newMusicContainer{
+    display: flex;
+    justify-content: center;
+
+    .trackContainer{
+      width: 50%;
+      .trackList{
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        padding: 1rem;
+      }
+      .inputText{
+        border-radius: $corner-radius-base;
+        padding: 0.25rem 0.5rem;
+        background: none;
+        border: solid 1px $text-base;
+        color: $text-base;
+      }
+      .albumTrackTitle{
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        .titleContainer{
+          flex-grow: 1;
+          padding: 20px;
+          display: flex;
+          flex-direction: column;
+          .inputText{
+            width: 100%;
+          }
+        }
+        .collectionContainer{
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            select{
+              width: 100%;
+              margin: 0;
+              padding: 0.25rem 0.5rem;
+              border-radius: $corner-radius-base;
+              background: none;
+              color: $text-base;
+              border: solid 1px $text-base;
+              option{
+                color: $text-base;
+                background: black;
+              }
+            }
+        }
+        label{
+          text-wrap: nowrap;
+        }
+
+      }
+      h6{
+        font-size: 1rem;
+      }
+      .track{
+        display : grid;
+        grid-template-columns: 70% 30%;
+        gap: 1rem;
+        div{
+            display: flex;
+          input{
+            margin: 0 1rem ;
+            flex-grow: 1;
+          }
+        }
+        #trackFile{
+          display: none;
+        }
+        .uploadSong{
+          display: flex;
+          text-wrap: nowrap;
+          justify-content: space-between;
+          border: solid 1px $text-base;
+          border-radius: $corner-radius-base;
+          padding: 0 1rem;
+        }
+      }
+    }
+
+
+
+    .uploadImage{
+      cursor: pointer;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      .boxSelect{
+        width: 250px;
+        height: 250px;
+        stroke-width: 1px;
+        border-radius: $corner-radius-larger;
+      }
+      .camera{
+        svg{
+          width: 75px;
+          height: 75px;
+        }
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+        position: absolute;
+        padding: 5px;
+        cursor: pointer;
+      }
+      #image{
+        display: none;
+      }
+    }
+  }
   .content{
     flex-grow: 1;
     overflow-y: auto;
     color: $text-base;
     h1{
       font-size: $text-size-larger-2;
+    }
+  }
+
+  .gallery{
+    width: 100%;
+    background: $background-elevated-base;
+    .galleryContainer{
+      display: grid;
+      grid-template-columns: 25% 25% 25% 25%;
+      gap: 1rem;
+      padding: 1rem;
+      .galleryCard{
+        a{
+            text-decoration: none;
+            color: $text-base;
+        }
+        .gallerySong{
+          display: flex;
+          align-items: center;
+          gap: 1rem;
+        }
+        &:hover{
+          .play{
+            margin-right: 5px;
+            display: flex;
+          }
+          background: $background-tinted-base;
+        }
+        .play{
+          display: none;
+          transition: all 0.3s ease;
+          align-items: center;
+          justify-content: center;
+          background: $essential-positive;
+          border-radius: 50%;
+          width: 35px;
+          height: 35px;
+            svg{
+              stroke: $background-press;
+              fill: $background-press;
+            }
+          &:active{
+            transform: scale(0.9);
+          }
+
+        }
+        background: $background-tinted-base;
+        border-radius: $corner-radius-larger-2;
+        padding: 0 1rem 0 0;
+        width: 250px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        img{
+          width : 50px;
+          height: 50px;
+          object-fit: cover;
+        }
+        svg{
+          stroke: $essential-positive;
+        }
+      }
     }
   }
 
@@ -719,16 +954,300 @@ nav{
 }
 
 .wrapper{
-  height: 100vh;
   width: 100%;
   background: linear-gradient(to bottom, #000000, #808080);
+
+
+  nav{
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    padding: 1rem;
+    background: $background-press;
+    color: $text-base;
+    .left{
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      img{
+        width: 125px;
+        height: 70px;
+      }
+    }
+    .right{
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+    }
+
+    img{
+      width: 50px;
+      height: 50px;
+    }
+    .dropdown {
+      position: relative;
+      display: inline-block;
+      .profile{
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 1rem;
+        div{
+          width: 2px;
+          height: 2rem;
+          background: $text-base;
+        }
+        img{
+          border-radius: 50%;
+        }
+      }
+    }
+
+    .dropdown-content {
+      border-radius: $corner-radius-base;
+      display: none;
+      position: absolute;
+      right: 0;
+      background-color: $background-elevated-base;
+      min-width: 80px;
+      box-shadow: 0 8px 16px 0 rgba(0, 0, 0, 0.2);
+      z-index: 1;
+
+      .hr {
+        border-color: $background-elevated-base;
+      }
+
+      .link {
+        color: $text-base;
+        padding: 10px 13px;
+        text-wrap: nowrap;
+        text-decoration: none;
+        display: block;
+      }
+
+      .link:hover {
+        border-radius: $corner-radius-base;
+        background-color: $background-tinted-highlight;
+      }
+
+      &.active {
+        display: block;
+      }
+
+
+    }
+  }
   .container{
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    height: calc(100vh - 160px);
+    .adminContainer{
+      width: 90%;
+      margin: 5rem;
+      border-radius: $corner-radius-base;
+      padding: 2rem;
+      display: flex;
+      flex-direction: column;
+      text-align: start;
+      align-items: center;
+      justify-content: center;
+      color: $text-base;
+      gap: 1rem;
+      .adminBox{
+        width: 90%;
+        .verifyContainer{
+          margin: 2rem;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          .left{
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 1rem;
+            img{
+              width: 100px;
+              height: 100px;
+              border-radius: 50%;
+              object-fit: cover;
+            }
+            .userContent{
+              h6{
+                font-size: 1.5rem;
+              }
+              text-align: start;
+            }
+          }
+
+          .right{
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 1rem;
+            div{
+              width: 50px;
+              height: 50px;
+              display: flex;
+              justify-content: center;
+              align-items: center;
+              border-radius: 50%;
+              background: $background-tinted-base;
+              &:hover{
+                background: $background-tinted-highlight;
+              }
+              &:active{
+                transform: scale(0.9);
+              }
+            }
+            .check{
+              stroke: $essential-bright-accent;
+            }
+            .x{
+              stroke: $text-negative;
+            }
+
+          }
+        }
+      }
+    }
     .loginBox{
+      margin: 4rem;
+      border-radius: $corner-radius-base;
+      padding: 2rem;
+      display: flex;
+      flex-direction: column;
+      text-align: center;
+      align-items: center;
+      justify-content: center;
+      color: $text-base;
+      gap: 1rem;
+
+      .inputVerify{
+        display: flex;
+        gap: 1rem;
+        #image{
+            display: none;
+        }
+
+        .verify{
+          gap: 1rem;
+          .role{
+            text-align: start;
+            h6{
+              margin: 4px 1rem;
+              font-size: 1rem;
+            }
+          }
+          display: flex;
+          flex-direction: column;
+          align-items: start;
+        }
+
+        .areaAbout{
+          text-align: start;
+        }
+
+        textarea {
+          width: 100%;
+          height: 150px;
+          padding: 10px;
+          margin: 4px 0;
+          background-color: var(--spotify-dark-gray);
+          color: var(--spotify-white);
+          border: 2px solid $text-base;
+          border-radius: 5px;
+          font-size: 16px;
+          font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+          resize: vertical;
+        }
+
+        textarea:focus {
+          outline: none;
+          border-color: var(--spotify-green);
+          box-shadow: 0 0 5px var(--spotify-green);
+        }
+
+        textarea::placeholder {
+          color: var(--spotify-light-gray);
+        }
+
+        .uploadImage{
+          cursor: pointer;
+          position: relative;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          .boxSelect{
+            width: 250px;
+            height: 250px;
+            stroke-width: 1px;
+            border-radius: $corner-radius-larger;
+          }
+          .camera{
+            svg{
+              width: 75px;
+              height: 75px;
+            }
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            position: absolute;
+            background: $background-elevated-base;
+            padding: 5px;
+            cursor: pointer;
+          }
+        }
+      }
+
+      .saveButton{
+        display: flex;
+        width: 100%;
+        justify-content: flex-end;
+        align-items: center;
+        gap: 1rem;
+        a{
+          color: $text-base;
+          font-size: 1rem;
+          text-decoration: none;
+          &:hover{
+            text-decoration: underline;
+          }
+        }
+      }
+
+      .dobInput{
+        display: grid;
+        grid-template-columns: 40% 60%;
+        .input-group{
+          width: 100%;
+          label{
+            text-wrap: nowrap;
+          }
+          #country{
+            width: 100%;
+          }
+          #dob{
+            width: 100%;
+          }
+        }
+      }
+      .editProfileTitle{
+        display: flex;
+        width: 100%;
+        flex-direction: column;
+        justify-content: center;
+        align-items: start;
+        gap: 1rem;
+        margin: 1rem;
+        h2{
+          font-size: $text-size-larger;
+          color: $text-base;
+        }
+
+      }
+
         background: $background-elevated-base;
         border-radius: $corner-radius-base;
         padding: 2rem;
@@ -750,6 +1269,7 @@ nav{
           border: 0;
           transition: all 0.2s ease;
           &:hover{
+            color: $text-base;
             background: $background-tinted-highlight;
           }
         }
@@ -820,23 +1340,65 @@ nav{
 }
 
 footer{
-  height: 60px;
-  position: fixed;
-  bottom: 0;
   width: 100%;
   background: $background-press;
   color: $text-base;
-  text-align: center;
-  padding: 1rem;
-  margin: 0;
-  border-radius: $corner-radius-base;
-  box-shadow: 0 0 4px 4px rgba(0, 0, 0, 1);
   display: flex;
-  right: 0;
-  justify-content: space-between;
-  .left{
-    gap: 1rem;
+  flex-direction: column;
+  .up{
     display: flex;
+    padding: 1rem;
+    justify-content: space-evenly;
+    img{
+        width: 125px;
+        height: 75px;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+
+    .left {
+      display : flex;
+      gap: 4rem;
+      .footerContent{
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        .footerTitle{
+          font-weight: 500;
+          text-wrap: nowrap;
+          color: $text-subdued;
+        }
+      }
+    }
+    .right {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+
+      svg{
+        width: 40px;
+        height: 40px;
+        padding: 5px;
+        border-radius: $corner-radius-larger-2;
+        background: $background-tinted-highlight;
+      }
+    }
+
+
+  }
+  .down{
+    text-align: center;
+    padding: 1rem;
+    margin: 0;
+    border-radius: $corner-radius-base;
+    box-shadow: 0 0 4px 4px rgba(0, 0, 0, 1);
+    display: flex;
+    right: 0;
+    justify-content: space-between;
+    .left{
+      gap: 1rem;
+      display: flex;
+    }
   }
 }
 
@@ -992,12 +1554,30 @@ footer{
   }
 
   .card{
+    a{
+        text-decoration: none;
+        color: $text-base;
+    }
     &:hover{
       background: $background-tinted-base;
       .cardImage .play{
         opacity: 1;
         bottom: 10%;
       }
+    }
+
+    .plusImage{
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: $essential-positive;
+        border-radius: $corner-radius-larger;
+        width: 100%;
+        height: 100%;
+        svg{
+          width: 100px;
+            height: 100px;
+        }
     }
     border-radius: $corner-radius-larger;
     width: 200px;

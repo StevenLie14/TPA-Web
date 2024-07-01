@@ -70,17 +70,3 @@ func (u UserRepositoryImpl) Delete(user model.User) {
 	//TODO implement me
 	panic("implement me")
 }
-
-func (u UserRepositoryImpl) FindArtistByName(name string) (users []model.User, err error) {
-	err = u.DB.Table("users").
-		Select("users.*, COUNT(*) AS follower_count").
-		Joins("JOIN follows ON follows.following_id = users.id").
-		Where("users.username LIKE ? AND users.role = 'Artist'", "%"+name+"%").
-		Group("users.id").
-		Order("follower_count DESC").
-		Find(&users).Error
-	if err != nil {
-		return nil, err
-	}
-	return
-}

@@ -6,7 +6,14 @@ interface User{
     avatar: string;
     country: string;
     gender: string;
-    description : string;
+    dob : string
+}
+
+interface EditProps{
+    userId: string;
+    gender: string;
+    dob: string;
+    country: string;
 }
 
 interface LoginProps{
