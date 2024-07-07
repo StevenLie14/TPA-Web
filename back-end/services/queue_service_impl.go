@@ -17,24 +17,24 @@ func NewQueueServiceImpl(QueueRepository repository.QueueRepository, Validate *v
 
 }
 
-func (q QueueServiceImpl) ClearQueue() error {
-	err := q.QueueRepository.ClearQueue()
+func (q QueueServiceImpl) ClearQueue(key string) error {
+	err := q.QueueRepository.ClearQueue(key)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (q QueueServiceImpl) Enqueue(song model.Song) error {
-	err := q.QueueRepository.Enqueue(song)
+func (q QueueServiceImpl) Enqueue(key string, song model.Song) error {
+	err := q.QueueRepository.Enqueue(key, song)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (q QueueServiceImpl) Dequeue() (response.SongResponse, error) {
-	song, err := q.QueueRepository.Dequeue()
+func (q QueueServiceImpl) Dequeue(key string) (response.SongResponse, error) {
+	song, err := q.QueueRepository.Dequeue(key)
 	if err != nil {
 		return response.SongResponse{}, err
 	}
@@ -43,11 +43,9 @@ func (q QueueServiceImpl) Dequeue() (response.SongResponse, error) {
 		Title:       song.Title,
 		ArtistId:    song.ArtistId,
 		AlbumId:     song.AlbumId,
-		Genre:       song.Genre,
 		ReleaseDate: song.ReleaseDate,
 		Duration:    song.Duration,
 		File:        song.File,
-		Image:       song.Image,
 		Album:       song.Album,
 		Play:        song.Play,
 		Artist:      song.Artist,
@@ -56,8 +54,8 @@ func (q QueueServiceImpl) Dequeue() (response.SongResponse, error) {
 	return res, nil
 }
 
-func (q QueueServiceImpl) GetQueue() (response.SongResponse, error) {
-	song, err := q.QueueRepository.GetQueue()
+func (q QueueServiceImpl) GetQueue(key string) (response.SongResponse, error) {
+	song, err := q.QueueRepository.GetQueue(key)
 	if err != nil {
 		return response.SongResponse{}, err
 	}
@@ -66,11 +64,9 @@ func (q QueueServiceImpl) GetQueue() (response.SongResponse, error) {
 		Title:       song.Title,
 		ArtistId:    song.ArtistId,
 		AlbumId:     song.AlbumId,
-		Genre:       song.Genre,
 		ReleaseDate: song.ReleaseDate,
 		Duration:    song.Duration,
 		File:        song.File,
-		Image:       song.Image,
 		Album:       song.Album,
 		Play:        song.Play,
 		Artist:      song.Artist,
@@ -79,8 +75,8 @@ func (q QueueServiceImpl) GetQueue() (response.SongResponse, error) {
 	return res, nil
 }
 
-func (q QueueServiceImpl) GetAllQueue() ([]response.SongResponse, error) {
-	songs, err := q.QueueRepository.GetAllQueue()
+func (q QueueServiceImpl) GetAllQueue(key string) ([]response.SongResponse, error) {
+	songs, err := q.QueueRepository.GetAllQueue(key)
 	if err != nil {
 		return nil, err
 	}
@@ -91,11 +87,9 @@ func (q QueueServiceImpl) GetAllQueue() ([]response.SongResponse, error) {
 			Title:       song.Title,
 			ArtistId:    song.ArtistId,
 			AlbumId:     song.AlbumId,
-			Genre:       song.Genre,
 			ReleaseDate: song.ReleaseDate,
 			Duration:    song.Duration,
 			File:        song.File,
-			Image:       song.Image,
 			Album:       song.Album,
 			Play:        song.Play,
 			Artist:      song.Artist,
@@ -103,4 +97,12 @@ func (q QueueServiceImpl) GetAllQueue() ([]response.SongResponse, error) {
 	}
 
 	return res, nil
+}
+
+func (q QueueServiceImpl) RemoveFromQueue(key string, index int) error {
+	err := q.QueueRepository.RemoveFromQueue(key, index)
+	if err != nil {
+		return err
+	}
+	return nil
 }

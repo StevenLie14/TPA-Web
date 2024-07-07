@@ -1,11 +1,11 @@
 interface Playlist {
     playlistId: string;
-    UserId : string;
-    Title: string;
-    Description: string;
-    Image: string;
-    User : User;
-    PlaylistDetails : PlaylistDetail[];
+    userId : string;
+    title: string;
+    description: string;
+    image: string;
+    user : User;
+    playlistDetails : PlaylistDetail[];
 }
 
 interface PlaylistDetail{

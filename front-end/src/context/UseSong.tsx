@@ -1,4 +1,5 @@
-import {useContext} from "react";
-import {SongContext} from "./SongProvider.tsx";
+import { useContext } from "react";
 
-export const useSong = () => useContext(SongContext)
+import { SongContext } from "./SongProvider.tsx";
+
+export const useSong = () => useContext(SongContext);

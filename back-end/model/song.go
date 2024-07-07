@@ -10,11 +10,9 @@ type Song struct {
 	Title       string
 	ArtistId    string
 	AlbumId     string
-	Genre       string
 	ReleaseDate time.Time
 	Duration    int
 	File        string
-	Image       string
 	Play        []response.PlayResponse `gorm:"foreignKey:SongId;references:SongId;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
 	Album       response.AlbumResponse  `gorm:"foreignKey:AlbumId;references:AlbumId;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
 	Artist      response.ArtistResponse `gorm:"foreignKey:ArtistId;references:ArtistId;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`

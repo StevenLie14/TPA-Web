@@ -1,14 +1,20 @@
+import { useNavigate } from "react-router-dom";
 
-export const SidePlaylist = ({playlist} : {playlist : Playlist}) => {
-
-
-    return (
-        <div className="sidePlaylist" key={playlist.playlistId}>
-            <img src={playlist.Image} alt={""}/>
-            <div className={"sidePlaylistContent"}>
-                <h3>{playlist.Title}</h3>
-                <p>{playlist.User.username}</p>
-            </div>
-        </div>
-    )
-}
+export const SidePlaylist = ({ playlist }: { playlist: Playlist }) => {
+  const navigate = useNavigate();
+  return (
+    <div
+      className="sidePlaylist"
+      onClick={() => {
+        navigate("/playlist/" + playlist.playlistId);
+      }}
+      key={playlist.playlistId}
+    >
+      <img src={playlist.image} alt={""} />
+      <div className={"sidePlaylistContent"}>
+        <h3>{playlist.title}</h3>
+        <p>{playlist.user.username}</p>
+      </div>
+    </div>
+  );
+};

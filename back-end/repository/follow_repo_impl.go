@@ -23,12 +23,12 @@ func (f FollowRepositoryImpl) Create(follow model.Follow) error {
 
 func (f FollowRepositoryImpl) GetFollowing(followerID string) (res []model.Follow, err error) {
 	fmt.Println(followerID)
-	err = f.DB.Where("follower_id = ?", followerID).Preload("Follower").Preload("Following").Find(&res).Error
+	err = f.DB.Where("follower_id = ?", followerID).Preload("Follower").Preload("Follower.NotificationSetting").Preload("Following").Preload("Following.NotificationSetting").Find(&res).Error
 	return
 }
 
 func (f FollowRepositoryImpl) GetFollower(followingID string) (res []model.Follow, err error) {
-	err = f.DB.Where("following_id = ?", followingID).Preload("Follower").Preload("Following").Find(&res).Error
+	err = f.DB.Where("following_id = ?", followingID).Preload("Follower").Preload("Follower.NotificationSetting").Preload("Following").Preload("Following.NotificationSetting").Find(&res).Error
 	return
 }
 

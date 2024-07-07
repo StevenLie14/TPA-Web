@@ -1,6 +1,7 @@
 package services
 
 import (
+	"back-end/data/request"
 	"back-end/data/response"
 	"back-end/model"
 	"back-end/repository"
@@ -25,12 +26,10 @@ func (s SongServiceImpl) GetAllSong() (res []response.SongResponse, err error) {
 			Title:       v.Title,
 			Album:       v.Album,
 			AlbumId:     v.AlbumId,
-			Genre:       v.Genre,
 			ReleaseDate: v.ReleaseDate,
 			Duration:    v.Duration,
 			File:        v.File,
 			Play:        v.Play,
-			Image:       v.Image,
 			ArtistId:    v.ArtistId,
 			Artist:      v.Artist,
 		})
@@ -48,12 +47,10 @@ func (s SongServiceImpl) GetSongById(id string) (res response.SongResponse, err 
 		Title:       resp.Title,
 		Album:       resp.Album,
 		AlbumId:     resp.AlbumId,
-		Genre:       resp.Genre,
 		ReleaseDate: resp.ReleaseDate,
 		Duration:    resp.Duration,
 		File:        resp.File,
 		Play:        resp.Play,
-		Image:       resp.Image,
 		ArtistId:    resp.ArtistId,
 		Artist:      resp.Artist,
 	}
@@ -72,12 +69,10 @@ func (s SongServiceImpl) GetSongByArtist(artistId string) (res []response.SongRe
 			Title:       v.Title,
 			Album:       v.Album,
 			AlbumId:     v.AlbumId,
-			Genre:       v.Genre,
 			ReleaseDate: v.ReleaseDate,
 			Duration:    v.Duration,
 			File:        v.File,
 			Play:        v.Play,
-			Image:       v.Image,
 			ArtistId:    v.ArtistId,
 			Artist:      v.Artist,
 		})
@@ -93,15 +88,30 @@ func (s SongServiceImpl) GetSongByAlbum(albumId string) (res []response.SongResp
 			Title:       v.Title,
 			Album:       v.Album,
 			AlbumId:     v.AlbumId,
-			Genre:       v.Genre,
 			ReleaseDate: v.ReleaseDate,
 			Duration:    v.Duration,
 			File:        v.File,
 			Play:        v.Play,
-			Image:       v.Image,
 			ArtistId:    v.ArtistId,
 			Artist:      v.Artist,
 		})
 	}
 	return
+}
+
+func (s SongServiceImpl) CreateSong(song request.SongRequest) error {
+	err := s.Validate.Struct(song)
+	if err != nil {
+		return err
+	}
+	err = s.SongRepository.CreateSong(model.Song{
+		SongId:      song.SongId,
+		Title:       song.Title,
+		ArtistId:    song.ArtistId,
+		AlbumId:     song.AlbumId,
+		ReleaseDate: song.ReleaseDate,
+		Duration:    song.Duration,
+		File:        song.File,
+	})
+	return err
 }

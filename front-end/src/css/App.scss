@@ -350,7 +350,7 @@ main{
             flex-grow: 1;
           }
         }
-        #trackFile{
+        .trackFile{
           display: none;
         }
         .uploadSong{
@@ -372,6 +372,7 @@ main{
       display: flex;
       align-items: center;
       justify-content: center;
+      height: 100%;
       .boxSelect{
         width: 250px;
         height: 250px;
@@ -475,6 +476,28 @@ main{
     background: $background-elevated-base;
     color: $text-base;
     gap: 4px;
+    label{
+      position: relative;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      svg{
+        display: none;
+        position: absolute;
+        width: 20px;
+        height: 20px;
+        cursor: pointer;
+      }
+        &:hover{
+            svg{
+            display: block;
+            }
+          img{
+            opacity: 0.5;
+          }
+        }
+    }
     img{
       border-radius: 50%;
       width: 150px;
@@ -496,10 +519,11 @@ main{
       display: flex;
       justify-content: center;
       align-items: center;
-      gap: 1rem;
       img{
         width: 30px;
         height: 30px;
+      }
+      svg{
       }
     }
   }
@@ -673,7 +697,61 @@ main{
         }
       }
     }
+
   }
+
+  .searchContainer{
+    margin: 0.5rem;
+    display: grid;
+    grid-template-columns: 45% 55%;
+    .topResult{
+      padding: 1rem;
+      margin: 1rem;
+      border-radius: $corner-radius-larger;
+      background: $background-elevated-base;
+      .topContent{
+        .artist{
+          border-radius: 50%;
+        }
+        .topTitle{
+          display: flex;
+        }
+        img{
+          width: 300px;
+          height: 300px;
+          object-fit: cover;
+          border-radius: $corner-radius-larger;
+        }
+      }
+    }
+    .topSongContent{
+      margin: 1rem;
+      .topTable{
+        display: flex;
+        align-items: center;
+        padding: 1rem;
+        justify-content: space-between;
+        margin-right: 2rem;
+        &:hover{
+          background: $background-tinted-base;
+          border-radius: $corner-radius-larger;
+        }
+        .title{
+          display: flex;
+          align-items: center;
+        }
+        img{
+          object-fit: cover;
+          margin: 0 1rem;
+          width: 50px;
+          height: 50px;
+          border-radius: $corner-radius-larger;
+        }
+      }
+    }
+  }
+
+
 }
 
 nav{
@@ -917,7 +995,7 @@ nav{
 .modal {
   display: flex;
   position: fixed;
-  color: $essential-negative;
+  color: $text-negative;
   font-weight: 500;
   font-size: 1.25rem;
   z-index: 1;
@@ -1038,6 +1116,7 @@ nav{
     }
   }
   .container{
+    min-height: 60vh;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -1055,6 +1134,59 @@ nav{
       color: $text-base;
       gap: 1rem;
       .adminBox{
+        .editProfileTitle{
+          a{
+            svg{
+                stroke: $text-base;
+            }
+            &:hover{
+              svg{
+                stroke: $text-positive;
+              }
+            }
+          }
+        }
+
+        .saveButton {
+          display: flex;
+          width: 90%;
+          padding: 1rem;
+          justify-content: flex-end;
+          align-items: center;
+          gap: 1rem;
+
+
+          .createMusic {
+            padding: 10px 30px;
+            background: $essential-positive;
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: $corner-radius-larger-3;
+            color: $background-press;
+            cursor: pointer;
+            border: 0;
+            transition: all 0.2s ease;
+
+            &:hover {
+              color: $text-base;
+              background: $background-tinted-highlight;
+            }
+
+            &:active {
+              transform: scale(0.9);
+            }
+          }
+
+          a {
+            color: $text-base;
+            font-size: 1rem;
+            text-decoration: none;
+
+            &:hover {
+              text-decoration: underline;
+            }
+          }
+        }
         width: 90%;
         .verifyContainer{
           margin: 2rem;
@@ -1133,7 +1265,19 @@ nav{
         .verify{
           gap: 1rem;
           .role{
+            width: 100%;
             text-align: start;
+            display: flex;
+            flex-direction: column;
+            input{
+              background-color: var(--spotify-dark-gray);
+              color: var(--spotify-white);
+              margin: 10px 0 ;
+              flex-grow: 1;
+              border: 2px solid $text-base;
+              border-radius: 5px;
+              height: 20px;
+            }
             h6{
               margin: 4px 1rem;
               font-size: 1rem;
@@ -1217,6 +1361,22 @@ nav{
         }
       }
 
+      #gender {
+        width: 100%;
+        padding: 10px;
+        font-size: 16px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        background: none;
+        color: $text-base;
+        outline: none;
+        transition: border-color 0.3s ease;
+        option{
+          background: $background-elevated-highlight;
+        }
+      }
+
+
       .dobInput{
         display: grid;
         grid-template-columns: 40% 60%;
@@ -1225,6 +1385,9 @@ nav{
           label{
             text-wrap: nowrap;
           }
+
+
+
           #country{
             width: 100%;
           }
@@ -1246,6 +1409,36 @@ nav{
           color: $text-base;
         }
 
+
+
+
+      }
+      .accountLink{
+        display: flex;
+        width: 100%;
+        flex-direction: column;
+        justify-content: center;
+        align-items: start;
+        gap: 1rem;
+        margin: 1rem;
+        .account{
+          width: 500px;
+          display: flex;
+          flex-direction: column;
+          align-items: flex-start;
+          .linkBackground{
+            background: $background-tinted-base;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            width: 100%;
+            padding: 1rem;
+            a{
+              text-decoration: none;
+              color: $text-subdued;
+            }
+          }
+        }
       }
 
         background: $background-elevated-base;
@@ -1538,6 +1731,36 @@ footer{
   .cardWrapper{
     display: flex;
     flex-wrap: wrap;
+    .browseMusic{
+      cursor: pointer;
+      margin: 10px;
+      &:hover{
+        transform: scale(1.05);
+      }
+      &:active{
+        transform: scale(0.95);
+      }
+      border-radius: 8px;
+      height: 200px;
+      background-color: rgb(220, 20, 140);
+      width: 200px;
+      overflow: hidden;
+      position: relative;
+      .title{
+        position: absolute;
+        color: $text-base;
+        top: 5%;
+        left: 10%;
+      }
+      img{
+        position: absolute;
+        width: 120px;
+        height: 120px;
+        transform: rotate(-45deg);
+        bottom: -20px;
+        right: -20px;
+      }
+    }
   }
 
   .cardTitle{
@@ -1669,6 +1892,116 @@ footer{
   border-radius: 10px;
   border: 2px solid #121212;
 }
+.skeletonTopWrapper{
+  border-radius: $corner-radius-larger;
+  width: 80%;
+  padding: 0.5rem 0.6rem;
+  margin: 0.5rem 1rem;
+  position: relative;
+  overflow: hidden;
+  background: #444;
+  .skeleton{
+    .image{
+      background: $text-subdued;
+      border-radius: 5px;
+      width: 300px;
+      height: 300px;
+    }
+    .text{
+      background: $text-subdued;
+      margin: 10px 0;
+      border-radius: 5px;
+      width: 100%;
+      height: 12px;
+    }
+
+    .title {
+      background: $text-subdued;
+      width: 50%;
+      border-radius: 5px;
+      margin: 10px 0;
+      height: 20px;
+    }
+  }
+  .shimmerWrapper {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    animation: loading 1.5s infinite;
+
+    .shimmer{
+      width: 50%;
+      height: 100%;
+      background: rgba(255,255,255,0.05);
+      transform: skewX(-20deg);
+      box-shadow: 0 0 30px 30px rgba(255,255,255,0.05)
+    }
+
+
+
+  }
+}
+
+.skeletonTableWrapper{
+  border-radius: $corner-radius-larger;
+  width: 80%;
+  padding: 0.5rem 0.6rem;
+  margin: 0.5rem 1rem;
+  position: relative;
+  overflow: hidden;
+  background: #444;
+  .skeletonTable{
+    display: flex;
+    justify-content: space-between;
+    .tableImage{
+      background: $text-subdued;
+      border-radius: 5px;
+      width: 50px;
+      height: 50px;
+    }
+    .text{
+      background: $text-subdued;
+      margin: 10px 0;
+      border-radius: 5px;
+      width: 40px;
+      height: 12px;
+    }
+
+    .title {
+      background: $text-subdued;
+      width: 50%;
+      border-radius: 5px;
+      margin: 10px 0;
+      height: 20px;
+    }
+  }
+  .shimmerWrapper {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    animation: loading 1.5s infinite;
+
+    .shimmer{
+      width: 50%;
+      height: 100%;
+      background: rgba(255,255,255,0.05);
+      transform: skewX(-20deg);
+      box-shadow: 0 0 30px 30px rgba(255,255,255,0.05)
+    }
+
+
+
+  }
+}
+@keyframes loading {
+  0% { transform: translateX(-150%)}
+  50% { transform: translateX(-60%)}
+  100% { transform: translateX(150%)}
+}
 
 .skeletonWrapper{
   border-radius: $corner-radius-larger;
@@ -1679,8 +2012,16 @@ footer{
   overflow: hidden;
   background: #444;
 
+
+
   .skeleton{
     border-radius: 5px;
+    .profile {
+      border-radius: 50%;
+      background: $text-subdued;
+      width: 120px;
+      height: 120px;
+    }
     .text{
       background: $text-subdued;
       margin: 10px 0;
@@ -1720,11 +2061,7 @@ footer{
       box-shadow: 0 0 30px 30px rgba(255,255,255,0.05)
     }
 
-    @keyframes loading {
-      0% { transform: translateX(-150%)}
-      50% { transform: translateX(-60%)}
-      100% { transform: translateX(150%)}
-    }
+
 
   }
 }
@@ -1765,7 +2102,7 @@ footer{
 
 .playlistTable{
   display: grid;
-  grid-template-columns: 40% 30% 25% 5%;
+  grid-template-columns: 40% 30% 18% 7% 5%;
   padding: 0.5rem 1rem;
   align-items: center;
   &:hover{
@@ -1786,6 +2123,15 @@ footer{
     height: 50px;
     border-radius: $corner-radius-larger;
   }
+  .trash{
+    &:hover{
+      stroke: $background-press;
+      fill: $text-negative;
+    }
+    &:active{
+      transform: scale(0.9);
+    }
+  }
 }
 
 .albumTable{
@@ -1794,7 +2140,7 @@ footer{
     border-radius: $corner-radius-larger;
   }
   display: grid;
-  grid-template-columns: 95% 5%;
+  grid-template-columns: 75% 15% 5%;
   align-items: center;
   padding: 0.5rem 2rem;
   .title{
@@ -1860,6 +2206,65 @@ footer{
   }
 }
 
+.dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.dropdown-content {
+  img{
+    width: 40px;
+    height: 40px;
+  }
+  .bookmark{
+    svg{
+
+    }
+    .active{
+      fill: $essential-positive;
+      stroke: $background-press;
+    }
+    &:active{
+      svg{
+        transform: scale(0.9);
+      }
+
+    }
+  }
+  border-radius: $corner-radius-base;
+  display: none;
+  position: absolute;
+  right: 0;
+  background-color: $background-elevated-base;
+  min-width: 80px;
+  box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2);
+  z-index: 1;
+
+  .hr{
+    border-color: $background-elevated-base;
+  }
+
+  .link{
+    color: $text-base;
+    padding: 10px 13px;
+    text-wrap: nowrap;
+    text-decoration: none;
+    display: block;
+  }
+
+  .link:hover{
+    border-radius: $corner-radius-base;
+    background-color: $background-tinted-highlight;
+  }
+
+  &.active{
+    display: block;
+  }
+}
+
+.success{
+  color: $text-positive;
+}
 
 
 

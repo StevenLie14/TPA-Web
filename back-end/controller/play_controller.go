@@ -15,6 +15,33 @@ func NewPlayController(playService services.PlayService) *PlayController {
 	return &PlayController{PlayService: playService}
 }
 
+func (c *PlayController) Get8LastPlayedSongByUser(ctx *gin.Context) {
+
+	userId := ctx.Query("id")
+
+	result, err := c.PlayService.GetLastPlayedSongByUser(userId)
+	if err != nil {
+		webResponse := response.WebResponse{
+			Code:    http.StatusBadRequest,
+			Message: err.Error(),
+			Data:    nil,
+		}
+
+		ctx.Header("Content-Type", "application/json")
+		ctx.JSON(http.StatusBadRequest, webResponse)
+		return
+	}
+
+	webResponse := response.WebResponse{
+		Code:    http.StatusOK,
+		Message: "OK",
+		Data:    result,
+	}
+
+	ctx.Header("Content-Type", "application/json")
+	ctx.JSON(http.StatusOK, webResponse)
+}
+
 func (c *PlayController) GetLastPlayedSongByUser(ctx *gin.Context) {
 
 	userId := ctx.Query("id")

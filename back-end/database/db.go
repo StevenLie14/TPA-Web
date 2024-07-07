@@ -18,6 +18,7 @@ func ConnectDB(config *config.Config) *gorm.DB {
 		return nil
 	}
 	err = gormDB.AutoMigrate(
+		&model.NotificationSetting{},
 		&model.Artist{},
 		&model.User{},
 		&model.Follow{},
@@ -26,8 +27,7 @@ func ConnectDB(config *config.Config) *gorm.DB {
 		&model.Play{},
 		&model.PlaylistDetails{},
 		&model.Playlist{},
-
-		//&model.Advertisement{},
+		&model.Advertisement{},
 	)
 	if err != nil {
 		utils.CheckError(err)

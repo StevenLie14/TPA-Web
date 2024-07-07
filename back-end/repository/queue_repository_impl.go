@@ -15,22 +15,20 @@ func NewQueueRepositoryImpl(rdb *database.Redis) *QueueRepositoryImpl {
 	return &QueueRepositoryImpl{rdb: rdb}
 }
 
-var queue = "songQueue"
-
-func (q *QueueRepositoryImpl) ClearQueue() error {
-	return q.rdb.Del(queue)
+func (q *QueueRepositoryImpl) ClearQueue(key string) error {
+	return q.rdb.Del(key)
 }
 
-func (q *QueueRepositoryImpl) Enqueue(song model.Song) error {
+func (q *QueueRepositoryImpl) Enqueue(key string, song model.Song) error {
 	songBytes, err := json.Marshal(song)
 	if err != nil {
 		return err
 	}
-	return q.rdb.RPush(queue, songBytes)
+	return q.rdb.RPush(key, songBytes)
 }
 
-func (q *QueueRepositoryImpl) Dequeue() (model.Song, error) {
-	songBytes, err := q.rdb.LPop(queue)
+func (q *QueueRepositoryImpl) Dequeue(key string) (model.Song, error) {
+	songBytes, err := q.rdb.LPop(key)
 	if err != nil {
 		return model.Song{}, err
 	}
@@ -46,8 +44,8 @@ func (q *QueueRepositoryImpl) Dequeue() (model.Song, error) {
 	return song, nil
 }
 
-func (q *QueueRepositoryImpl) GetQueue() (model.Song, error) {
-	songBytes, err := q.rdb.LIndex(queue, 0)
+func (q *QueueRepositoryImpl) GetQueue(key string) (model.Song, error) {
+	songBytes, err := q.rdb.LIndex(key, 0)
 	if err != nil {
 		return model.Song{}, err
 	}
@@ -63,8 +61,8 @@ func (q *QueueRepositoryImpl) GetQueue() (model.Song, error) {
 	return song, nil
 }
 
-func (q *QueueRepositoryImpl) GetAllQueue() ([]model.Song, error) {
-	songBytes, err := q.rdb.LRange(queue, 0, -1)
+func (q *QueueRepositoryImpl) GetAllQueue(key string) ([]model.Song, error) {
+	songBytes, err := q.rdb.LRange(key, 0, -1)
 	if err != nil {
 		return nil, err
 	}
@@ -79,4 +77,20 @@ func (q *QueueRepositoryImpl) GetAllQueue() ([]model.Song, error) {
 	}
 
 	return songs, nil
+}
+
+func (q *QueueRepositoryImpl) RemoveFromQueue(key string, index int) error {
+	placeholder := "TO_BE_DELETED"
+
+	err := q.rdb.LSet(key, int64(index), placeholder)
+	if err != nil {
+		return err
+	}
+
+	err = q.rdb.LRem(key, 1, placeholder)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

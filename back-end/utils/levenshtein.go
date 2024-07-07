@@ -1,6 +1,6 @@
 package utils
 
-func getDistance(query string, content string) int {
+func GetDistance(query string, content string) int {
 	lenQuery := len(query)
 	lenContent := len(content)
 

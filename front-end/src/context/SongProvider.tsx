@@ -1,104 +1,327 @@
-import {createContext, Dispatch, ReactNode, SetStateAction, useEffect, useState} from "react";
-import axios, {AxiosResponse} from "axios";
+import type { AxiosResponse } from "axios";
+import axios from "axios";
+import { atom, useAtom } from "jotai";
+import { atomWithStorage } from "jotai/utils";
+import type { Dispatch, ReactNode, RefObject, SetStateAction } from "react";
+import { useEffect } from "react";
+import { useRef } from "react";
+import { createContext, useState } from "react";
 
+import { useAuth } from "./UseAuth.tsx";
 
-interface IProps{
-    song : Song
-    changeSong : (songId : string) => void
-    showDetail : string
-    showDetailHandler : (type : string) => void
-    track : string
-    setSong : Dispatch<SetStateAction<Song>>
-    setTrack : Dispatch<SetStateAction<string>>
-    handlePlay : () => void,
-    isPaused : boolean,
+export const SongContext = createContext<IProps>({} as IProps);
+
+const queueAtom = atom<Song[] | null>(null);
+const nowPlaying = atomWithStorage<Song | null>("nowPlaying", null);
+const isUpdated = atom<boolean>(false);
+const isPause = atomWithStorage<boolean>("paused", true);
+const adv = atomWithStorage<number>("switch", 0);
+const advertisement = atom<Advertisement | null>(null);
+
+export const Enqueue = atom(null, (_, set, song: Song, user: User | null) => {
+  if (user == null) return;
+  void axios
+    .post("http://localhost:4000/queue/enqueue?key=" + user.user_id, {
+      songId: song.songId,
+      title: song.title,
+      artistId: song.artistId,
+      albumId: song.albumId,
+      releaseDate: song.releaseDate,
+      duration: song.duration,
+      file: song.file,
+      play: song.play,
+      artist: song.artist,
+      album: song.album,
+    })
+    .then(() => {
+      set(isUpdated, true);
+    });
+});
+
+export const RemoveQueue = atom(
+  null,
+  (_, set, index: number, user: User | null) => {
+    if (user == null) return;
+    void axios
+      .post(
+        "http://localhost:4000/queue/remove?key=" +
+          user.user_id +
+          "&index=" +
+          index.toString(),
+      )
+      .then(() => {
+        set(isUpdated, true);
+      });
+  },
+);
+
+export const Dequeue = atom(null, (get, set, user: User | null) => {
+  if (user == null) return;
+  if (get(adv) < 5) {
+    set(isPause, true);
+    void axios
+      .get("http://localhost:4000/queue/dequeue?key=" + user.user_id)
+      .then((res: AxiosResponse<WebResponse<Song>>) => {
+        console.log(res);
+        set(isUpdated, true);
+        set(nowPlaying, res.data.data);
+        set(isPause, false);
+        set(adv, get(adv) + 1);
+      })
+      .catch((err: unknown) => {
+        console.log(err);
+        set(isPause, true);
+      });
+    return;
+  }
+  if (get(advertisement) == null) {
+    void axios
+      .get("http://localhost:4000/adv/get")
+      .then((res: AxiosResponse<WebResponse<Advertisement>>) => {
+        console.log(res.data.data);
+        set(advertisement, res.data.data);
+        set(isPause, false);
+        set(adv, get(adv) + 1);
+      })
+      .catch(() => {
+        console.log("error");
+      });
+  }
+});
+
+export const ResetAdv = atom(null, (get, set) => {
+  if (get(adv) >= 5 && get(advertisement) != null) {
+    set(adv, 0);
+    set(advertisement, null);
+  }
+});
+
+export const ClearQueue = atom(null, (_, set, user: User | null) => {
+  if (user == null) return;
+  localStorage.setItem("nowPlaying", "");
+  void axios
+    .get("http://localhost:4000/queue/clear?key=" + user.user_id)
+    .then(() => {
+      set(isUpdated, true);
+      set(queueAtom, []);
+    });
+});
+
+export const GetAllQueue = atom(null, (_, set, user: User | null) => {
+  if (user == null) return;
+  void axios
+    .get("http://localhost:4000/queue/get-all?key=" + user.user_id)
+    .then((res: AxiosResponse<WebResponse<Song[]>>) => {
+      set(isUpdated, false);
+      set(queueAtom, res.data.data);
+    })
+    .catch((err: unknown) => {
+      console.log(err);
+    });
+});
+
+interface IProps {
+  song: Song | null;
+  changeSong: (songId: string) => void;
+  showDetail: string;
+  showDetailHandler: (type: string) => void;
+  track: string;
+  setSong: Dispatch<SetStateAction<Song | null>>;
+  setTrack: Dispatch<SetStateAction<string>>;
+  handlePlay: () => void;
+  isPaused: boolean;
+  playlist: Playlist[] | undefined;
+  updatePlaylist: () => void;
+  enqueue: (song: Song, user: User | null) => void;
+  dequeue: (user: User | null) => void;
+  clearAllQueue: () => void;
+  getAllQueue: (user: User | null) => void;
+  audioRef: RefObject<HTMLAudioElement | null>;
+  waitingSong: Song[] | null;
+  removeQueue: (index: number, user: User | null) => void;
+  advertise: Advertisement | null;
+  resetAdv: () => void;
 }
 
-export const SongContext = createContext<IProps>({} as IProps)
+export const SongProvider = ({ children }: { children: ReactNode }) => {
+  const { user } = useAuth();
+  const [song, setSong] = useAtom(nowPlaying);
+  const [playlist, setPlaylist] = useState<Playlist[]>();
+  const [, enqueue] = useAtom(Enqueue);
+  const [, dequeue] = useAtom(Dequeue);
+  const [, clearQueue] = useAtom(ClearQueue);
+  const [, getAllQueue] = useAtom(GetAllQueue);
+  const [, removeQueue] = useAtom(RemoveQueue);
+  const [, resetAdv] = useAtom(ResetAdv);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [waitingSong] = useAtom(queueAtom);
+  const [update] = useAtom(isUpdated);
+  const [isPaused, setIsPaused] = useAtom(isPause);
+  const [advCount, setAdvCount] = useAtom(adv);
+  const [advertise] = useAtom(advertisement);
 
+  useEffect(() => {
+    console.log(advertisement);
+    if (advCount > 5) {
+      setShowDetail("advertise");
+    }
+  }, [advCount, setAdvCount]);
 
-export const SongProvider = ({children} : {children : ReactNode}) => {
-    const [song,setSong] = useState<Song>({
-        songId: "",
-        userId: "",
-        user: {
-            user_id: "",
-            avatar: "/assets/pp2.jpg",
-            username : "a",
-            email : "",
-            gender : "",
-            country : "",
-            role : "",
-            description : "",
-        } as User,
-        songAudio: new Audio("/assets/life hate us.mp3"),
-        title : "",
-        albumId : "",
-        album : {} as Album,
-        image : "/assets/life hate us.jpg",
-        file : "/assets/life hate us.mp3",
-        play : [],
-        duration : 0,
-        genre : "",
-        releaseDate : new Date().toISOString()
-    } as Song)
+  useEffect(() => {
+    if (song != null) return;
+    dequeue(user);
+  }, [user]);
 
-    const [isPaused, setIsPaused] = useState(song.songAudio.paused);
+  useEffect(() => {
+    if (update) {
+      if (song == null) {
+        dequeue(user);
+      }
+      getAllQueue(user);
+    }
+  }, [update, user]);
 
-    useEffect(() => {
-        axios.get("http://localhost:4000/song/get?id=1a6ddab1-0503-442a-999e-9de4bcfa34fe").then((res : AxiosResponse<WebResponse<Song>>) => {
-            console.log(res.data)
-            res.data.data.songAudio = new Audio(res.data.data.file);
-            setSong(res.data.data)
-        }).catch((err) => {
-            console.log(err)
-        })
-    }, []);
+  useEffect(() => {
+    updatePlaylist();
+    getAllQueue(user);
+  }, [user]);
 
-
-
-    const handlePlay = () => {
-        if (song.songAudio.paused) {
-            setIsPaused(false);
-            song.songAudio.play().catch((error) => {console.log(error)});
+  useEffect(() => {
+    if (song == null) return;
+    axios
+      .get("http://localhost:4000/music?id=" + song.songId, {
+        responseType: "blob",
+      })
+      .then((response: AxiosResponse<Blob>) => {
+        const blob = response.data;
+        const audioURL = URL.createObjectURL(blob);
+        if (song.songAudio) {
+          song.songAudio.src = audioURL;
         } else {
-            setIsPaused(true);
-            song.songAudio.pause();
+          song.songAudio = new Audio(audioURL);
         }
-    };
-
-    const [track,setTrack] = useState<string>("")
-
-    const [showDetail, setShowDetail] = useState<string>("")
-
-    const showDetailHandler = (type : string) => {
-        if (showDetail === type) {
-            setShowDetail("")
-        }else{
-            setShowDetail(type)
+        audioRef.current?.pause();
+        audioRef.current = null;
+        audioRef.current = song.songAudio;
+        if (!isPaused) {
+          audioRef.current.play().catch((error: unknown) => {
+            console.log(error);
+            return;
+          });
         }
+      })
+      .catch((error: unknown) => {
+        console.error("Error fetching music:", error);
+      });
+  }, [setIsPaused, song]);
 
+  useEffect(() => {
+    console.log(advertise);
+    if (advertise == null) return;
+    axios
+      .get("http://localhost:4000/adv?id=" + advertise.advertisementId, {
+        responseType: "blob",
+      })
+      .then((response: AxiosResponse<Blob>) => {
+        const blob = response.data;
+        const audioURL = URL.createObjectURL(blob);
+        // if (song.songAudio) {
+        //   song.songAudio.src = audioURL;
+        // } else {
+        //   song.songAudio = new Audio(audioURL);
+        // }
+        audioRef.current?.pause();
+        audioRef.current = null;
+        audioRef.current = new Audio(audioURL);
+        audioRef.current.play().catch((error: unknown) => {
+          console.log(error);
+          return;
+        });
+      })
+      .catch((error: unknown) => {
+        console.error("Error fetching music:", error);
+      });
+  }, [advertise]);
+
+  const clearAllQueue = () => {
+    clearQueue(user);
+    setSong(null);
+  };
+
+  const updatePlaylist = () => {
+    if (user == null) return;
+    axios
+      .get("http://localhost:4000/playlist?id=" + user.user_id)
+      .then((res: AxiosResponse<WebResponse<Playlist[]>>) => {
+        setPlaylist(res.data.data);
+        // console.log(res.data.data)
+      })
+      .catch((err: unknown) => {
+        console.log(err);
+      });
+  };
+
+  const handlePlay = () => {
+    if (audioRef.current == null) return;
+    if (advCount >= 5) return;
+    if (!isPaused) {
+      // audioRef.current.play().catch((error: unknown) => {
+      //   console.log(error);
+      //   return;
+      // });
+      setIsPaused(true);
+    } else {
+      // audioRef.current.pause();
+      setIsPaused(false);
     }
+  };
 
-    const changeSong = (songId : string) => {
-        axios.get("http://localhost:4000/song/get?id="+songId).then((res : AxiosResponse<WebResponse<Song>>) => {
-            console.log(res.data)
-            setSong(res.data.data)
-        }).catch((err) => {
-            console.log(err)
-        })
+  const [track, setTrack] = useState<string>("");
+
+  const [showDetail, setShowDetail] = useState<string>("");
+
+  const showDetailHandler = (type: string) => {
+    if (showDetail === type) {
+      setShowDetail("");
+    } else {
+      setShowDetail(type);
     }
+  };
 
+  const changeSong = (songId: string) => {
+    axios
+      .get("http://localhost:4000/song/get?id=" + songId)
+      .then((res: AxiosResponse<WebResponse<Song>>) => {
+        console.log(res.data);
+        setSong(res.data.data);
+      })
+      .catch((err: unknown) => {
+        console.log(err);
+      });
+  };
 
-    const values : IProps = {
-        setSong,song,changeSong,showDetail,showDetailHandler,track,setTrack,handlePlay,isPaused
-    }
+  const values: IProps = {
+    setSong,
+    song,
+    changeSong,
+    showDetail,
+    showDetailHandler,
+    track,
+    setTrack,
+    handlePlay,
+    isPaused,
+    playlist,
+    updatePlaylist,
+    enqueue,
+    dequeue,
+    clearAllQueue,
+    getAllQueue,
+    audioRef,
+    waitingSong,
+    removeQueue,
+    advertise,
+    resetAdv,
+  };
 
-    return   (
-        <SongContext.Provider value={values}>
-            {children}
-            </SongContext.Provider>
-
-    )
-}
-
+  return <SongContext.Provider value={values}>{children}</SongContext.Provider>;
+};

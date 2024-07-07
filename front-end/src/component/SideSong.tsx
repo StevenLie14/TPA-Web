@@ -1,28 +1,49 @@
-import {Play, Trash2} from "lucide-react";
-import {useSong} from "../context/UseSong.tsx";
+import { Trash2 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
-export const SideSong = ({songs,trash} : {songs : Song,trash :boolean}) => {
-    const {setSong,handlePlay,song} = useSong();
+import { useAuth } from "../context/UseAuth.tsx";
+import { useSong } from "../context/UseSong.tsx";
 
-    const changeSong = () => {
-        if (song === songs) return;
-        setSong(song);
-        handlePlay();
+export const SideSong = ({
+  songs,
+  trash,
+  index,
+}: {
+  songs: Song;
+  trash: boolean;
+  index: number;
+}) => {
+  const { song, removeQueue, dequeue, waitingSong, setSong } = useSong();
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const handleNavigate = () => {
+    navigate("/track/" + songs.songId);
+  };
+
+  const handleRemoveQueue = (e: React.MouseEvent<SVGSVGElement>) => {
+    e.stopPropagation();
+    if (waitingSong == null) {
+      setSong(null);
+    } else if (songs == song) {
+      dequeue(user);
+    } else {
+      removeQueue(index, user);
     }
+  };
 
-    return (
-        <div className="sideSong">
-            <div className={"albumPic"} onClick={changeSong}>
-                {song != songs && <Play/>}
-                <img src={songs?.image} alt={songs?.title} className="albumPic"/>
-            </div>
-            <div className="song-details">
-                <h3 className="song-title">{songs?.title}</h3>
-                <p className="artist-name">{songs?.artist?.user?.username}</p>
-            </div>
-            <div className={"trash"}>
-                {trash && <Trash2/>}
-            </div>
-        </div>
-    )
-}
+  return (
+    <div className="sideSong" onClick={handleNavigate}>
+      <div className={"albumPic"}>
+        {/*{song != songs && <Play />}*/}
+        <img src={songs.album.banner} alt={songs.title} className="albumPic" />
+      </div>
+      <div className="song-details">
+        <h3 className="song-title">{songs.title}</h3>
+        <p className="artist-name">{songs.artist.user.username}</p>
+      </div>
+      <div className={"trash"}>
+        {trash && <Trash2 onClick={handleRemoveQueue} />}
+      </div>
+    </div>
+  );
+};

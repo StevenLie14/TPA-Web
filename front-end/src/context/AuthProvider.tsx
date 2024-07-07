@@ -1,139 +1,195 @@
-import {createContext, ReactNode, useEffect, useState} from "react";
-import axios, {AxiosResponse} from "axios";
-import {useGoogleLogin} from "@react-oauth/google";
-import {useNavigate} from "react-router-dom";
+import { useGoogleLogin } from "@react-oauth/google";
+import type { AxiosResponse } from "axios";
+import axios from "axios";
+import type { Dispatch, ReactNode, SetStateAction } from "react";
+import { createContext, useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
-interface IProps{
-    user : User | null,
-    login: (user : LoginProps) => void,
-    logout: () => void,
-    register: (user : RegisterProps) => void,
-    error: string,
-    googleLogin : () => void
+interface IProps {
+  user: User | null;
+  login: (user: LoginProps) => void;
+  logout: () => void;
+  register: (user: RegisterProps) => void;
+  error: string;
+  googleLogin: () => void;
+  getUser: () => void;
+  authenticated: boolean | null;
+  success: string;
+  setSuccess: Dispatch<SetStateAction<string>>;
+  setError: Dispatch<SetStateAction<string>>;
 }
 
-export const AuthContext = createContext<IProps>({} as IProps)
+export const AuthContext = createContext<IProps>({} as IProps);
 
+export const AuthProvider = ({ children }: { children: ReactNode }) => {
+  const [user, setUser] = useState<User | null>(null);
+  const [error, setError] = useState<string>("");
+  const navigate = useNavigate();
+  const [authenticated, setAuthenticated] = useState<boolean | null>(null);
+  const [success, setSuccess] = useState<string>("");
 
-export const AuthProvider = ({children} : {children : ReactNode}) => {
-    const [user,setUser] = useState(null)
-    const [error,setError] = useState<string>("");
-    const navigate = useNavigate()
+  useEffect(() => {
+    getUser();
+    setError("");
+  }, []);
 
-    useEffect(() => {
-        getUser()
-        setError("")
-    },[])
+  const getUser = () => {
+    axios
+      .get("http://localhost:4000/user/current-user", {
+        withCredentials: true,
+      })
+      .then((res: AxiosResponse<WebResponse<User>>) => {
+        setUser(res.data.data);
+        setAuthenticated(true);
+        const userId = res.data.data.user_id;
+        const eventSource = new EventSource(
+          "http://localhost:4000/sse/notification-stream?id=" + userId,
+          { withCredentials: true },
+        );
 
-    const getUser = () => {
-        fetch("http://localhost:4000/user/current-user", {
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            credentials: "include"
-        })
-            .then((res) => res.json())
-            .then((data) => {
-                console.log(data.data);
-                setUser(data.data);
-                const eventSource = new EventSource('http://localhost:4000/sse/notification-stream');
-
-                eventSource.onmessage = function(event) {
-
-                    console.log('Received message:', event.data);
-                };
-
-                eventSource.addEventListener('notif-updated', function(event) {
-                    console.log('Notification updated:', event.data);
-                });
-                eventSource.onerror = (error) => {
-                    console.error('EventSource failed:', error);
-                    eventSource.close();
-                };
-            })
-            .catch((error) => {
-                console.error("Error fetching user:", error);
-            });
-
-
-    }
-
-
-    const login = (user : LoginProps) => {
-
-
-        axios.post("http://localhost:4000/user/login", {
-            Email: user.email,
-            Password: user.password
-        }, {
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            withCredentials: true
-        })
-            .then((response) => {
-                console.log(response.data);
-                navigate("/home")
-                getUser();
-            })
-            .catch((error) => {
-                console.error('Error fetching or processing data:', error);
-            });
-    }
-
-    const register = (user : RegisterProps) => {
-        console.log(user)
-
-        const method = {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                Email   : user.email,
-                Password: user.password,
-                Role : "user"
-            })
+        eventSource.onopen = function () {
+          console.log("Connection to server opened.");
         };
 
-        fetch("http://localhost:4000/user/register",method).then((res) => res.json()).then((data) => {
-            console.log(data)
-        })
+        eventSource.addEventListener(
+          "notif-updated",
+          function (event: MessageEvent<string>) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+            const data: Notification = JSON.parse(event.data);
+            console.log("Received notif-updated message:", data.body);
+            new Notification(data.title, {
+              body: data.body,
+            });
+          },
+        );
 
-    }
+        eventSource.addEventListener("initial", function (event) {
+          console.log("Received initial message:", event.data);
+        });
 
-    const googleLogin = useGoogleLogin({
-        onSuccess: async (codeResponse) => {
-            axios.get(
-                `http://localhost:4000/auth/google/callback?code=${codeResponse.code}`
-                ,{
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    withCredentials: true
-                }).then((res : AxiosResponse<WebResponse<User>>) => {
-                console.log(res.data.data)
-                navigate("/home")
-            }).catch((err) => {
-                console.log(err)
+        eventSource.onerror = function (error) {
+          console.error("EventSource error:", error);
+          eventSource.close();
+          setTimeout(() => {
+            console.log("Attempting to reconnect...");
+            getUser();
+          }, 5000);
+        };
+
+        if ("Notification" in window) {
+          Notification.requestPermission()
+            .then((permission) => {
+              if (permission === "granted") {
+                console.log("Notification permission granted.");
+              } else {
+                console.log("Notification permission denied.");
+              }
             })
+            .catch((error: unknown) => {
+              console.error("Error requesting notification permission:", error);
+            });
+        } else {
+          console.log("This browser does not support notifications.");
+        }
+      })
+      .catch((error: unknown) => {
+        setAuthenticated(false);
+        console.error("Error fetching user:", error);
+      });
+  };
 
+  const login = (user: LoginProps) => {
+    axios
+      .post(
+        "http://localhost:4000/user/login",
+        {
+          Email: user.email,
+          Password: user.password,
         },
-        flow: "auth-code",
-    });
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+          withCredentials: true,
+        },
+      )
+      .then((response) => {
+        console.log(response.data);
+        setAuthenticated(true);
+        getUser();
+        navigate("/home");
+      })
+      .catch((error: unknown) => {
+        setError("Invalid email or password");
+        console.error("Error fetching or processing data:", error);
+      });
+  };
 
-    const logout = () => {
-        fetch("http://localhost:4000/user/logout").then((res) => res.json()).then((data) => {console.log(data)})
-    }
+  const register = (user: RegisterProps) => {
+    axios
+      .put("http://localhost:4000/user/register", {
+        Email: user.email,
+        Password: user.password,
+        Username: user.username,
+      })
+      .then((response) => {
+        console.log(response.data);
+        setSuccess("User registered successfully! Please Check your Email");
+      })
+      .catch((error: unknown) => {
+        console.error("There was an error registering the user!", error);
+      });
+  };
 
-    const values: IProps = {
-        user,error,login,register,logout,googleLogin
-    }
-    return   (
-        <AuthContext.Provider value={values}>
-            {children}
-        </AuthContext.Provider>
+  const googleLogin = useGoogleLogin({
+    onSuccess: (codeResponse) => {
+      axios
+        .get(
+          `http://localhost:4000/auth/google/callback?code=${codeResponse.code}`,
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+            withCredentials: true,
+          },
+        )
+        .then((res: AxiosResponse<WebResponse<User>>) => {
+          console.log(res.data.data);
+          getUser();
+          navigate("/home");
+        })
+        .catch((err: unknown) => {
+          console.log(err);
+        });
+    },
+    flow: "auth-code",
+  });
 
-    )
-}
+  const logout = () => {
+    if (user == null) return;
+    void axios
+      .get("http://localhost:4000/user/logout?id=" + user.user_id, {
+        withCredentials: true,
+      })
+      .then(() => {
+        setUser(null);
+        setAuthenticated(false);
+        navigate("/login");
+      });
+  };
 
+  const values: IProps = {
+    user,
+    error,
+    login,
+    register,
+    logout,
+    googleLogin,
+    getUser,
+    authenticated,
+    success,
+    setSuccess,
+    setError,
+  };
+  return <AuthContext.Provider value={values}>{children}</AuthContext.Provider>;
+};

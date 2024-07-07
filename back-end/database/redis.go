@@ -82,3 +82,19 @@ func (r Redis) LRange(key string, start, stop int64) ([][]byte, error) {
 	}
 	return byteVals, nil
 }
+
+func (r Redis) LSet(key string, index int64, value string) error {
+	err := r.rdb.LSet(context.Background(), key, index, value).Err()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (r Redis) LRem(key string, count int64, value string) error {
+	err := r.rdb.LRem(context.Background(), key, count, value).Err()
+	if err != nil {
+		return err
+	}
+	return nil
+}

@@ -1,7 +1,3 @@
-export const Skeleton = ({type} : {type : string}) => {
-
-    return(
-            <div className={type}>
-            </div>
-        )
-}
+export const Skeleton = ({ type }: { type: string }) => {
+  return <div className={type}></div>;
+};

@@ -1,84 +1,143 @@
-import {useAuth} from "../context/UseAuth.tsx";
-import {useEffect, useState} from "react";
+import type { AxiosError } from "axios";
+import axios, { type AxiosResponse } from "axios";
+import { BoxSelect, Camera, ChevronLeft } from "lucide-react";
+import { type ChangeEvent, useEffect, useState } from "react";
 import * as React from "react";
-import axios from "axios";
-import ErrorModal from "../component/ErrorModal.tsx";
-import {Navbar} from "../component/Navbar.tsx";
-import {Link} from "react-router-dom";
-import {BoxSelect, Camera, ChevronLeft} from "lucide-react";
-import {Footer} from "../component/Footer.tsx";
+import { Link, useNavigate } from "react-router-dom";
+
+import { ErrorModal } from "../component/ErrorModal.tsx";
+import { Footer } from "../component/Footer.tsx";
+import { Navbar } from "../component/Navbar.tsx";
+import { useAuth } from "../context/UseAuth.tsx";
 
 export const GetVerifiedPage = () => {
-    const {user} = useAuth()
+  const { user, authenticated } = useAuth();
+  const navigate = useNavigate();
+  const [description, setDescription] = useState<string>("");
+  const [error, setError] = useState<string>("");
+  const [image, setImage] = useState<File | null>(null);
 
-    const [error, setError] = useState<string>("")
-    const[editProps, setEditProps] = useState<EditProps>({} as EditProps)
+  const onChangeInput = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setDescription(e.target.value);
+  };
 
-    const onChangeInput = (e : React.ChangeEvent<HTMLTextAreaElement>) => {
-        setEditProps({...editProps,[e.target.name]: e.target.value})
-        console.log(editProps)
+  const handleChangeImage = (e: ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files == null) return;
+    if (e.target.files.length === 0) {
+      setError("Please select an image");
+      return;
+    } else if (
+      !e.target.files[0].name.endsWith(".jpg") &&
+      !e.target.files[0].name.endsWith(".png") &&
+      !e.target.files[0].name.endsWith(".jpeg")
+    ) {
+      setError("Please select an image with jpg, jpeg, or png format");
+      return;
+    }
+    setImage(e.target.files[0]);
+  };
+
+  useEffect(() => {
+    if (authenticated == null) return;
+    if (!authenticated) {
+      navigate("/login");
+    }
+  }, [authenticated]);
+
+  const handlePost = () => {
+    if (user == null) return;
+
+    if (description === "") {
+      setError("Please fill the Description field");
+      return;
     }
 
-    const onEdit = () => {
-        if (user == null) return
-
-        axios.post("http://localhost:4000/user/edit-prof",{
-            userId : user.user_id,
-            country : editProps.country,
-            dob : new Date(editProps.dob),
-            gender : editProps.gender
-        }).then((res) => {
-            console.log(res)
-        })
+    if (image === null) {
+      setError("Please upload the banner");
+      return;
     }
 
-    useEffect(() => {
-        if (user == null) return
-        setEditProps({...editProps, userId: user.user_id,dob: user.dob,country: user.country,gender:user.gender})
-    }, [user]);
+    const formData = new FormData();
+    formData.append("image", image as Blob);
+    formData.append("description", description);
+    formData.append("userId", user.user_id);
+    axios
+      .post("http://localhost:4000/artist/create", formData)
+      .then((res: AxiosResponse<WebResponse<Album>>) => {
+        console.log(res);
+        setError("Album created");
+      })
+      .catch((err: unknown) => {
+        const error = err as AxiosError<WebResponse<string>>;
+        if (error.response == undefined) return;
+        setError(error.response.data.message);
+      });
+  };
 
-    return(
-        <div className={"wrapper"}>
-            {error && <ErrorModal error={error} setError={setError}/>}
-            <Navbar/>
-            <div className="container">
-                <div className={"loginBox"}>
-                    <div className={"editProfileTitle"}>
-                        <Link to={""}><ChevronLeft/></Link>
-                        <h1>Get Verified</h1>
-                        <p>User ID</p>
-                        <p>{user?.user_id}</p>
+  return (
+    <div className={"wrapper"}>
+      {error && <ErrorModal error={error} setError={setError} />}
+      <Navbar />
+      <div className="container">
+        <div className={"loginBox"}>
+          <div className={"editProfileTitle"}>
+            <Link to={"/account/settings"}>
+              <ChevronLeft />
+            </Link>
+            <h1>Get Verified</h1>
+          </div>
+          <div className={"inputVerify"}>
+            <label htmlFor="image">
+              <div className={"uploadImage"}>
+                {image ? (
+                  <>
+                    <img
+                      src={URL.createObjectURL(image)}
+                      alt={"banner"}
+                      style={{ width: "200px", height: "200px" }}
+                    />
+                    <input
+                      type={"file"}
+                      id={"image"}
+                      onChange={handleChangeImage}
+                    />
+                  </>
+                ) : (
+                  <>
+                    <div className={"camera"}>
+                      <Camera />
+                      Upload Banner Image
+                      <input
+                        type={"file"}
+                        id={"image"}
+                        onChange={handleChangeImage}
+                      />
                     </div>
-                    <div className={"inputVerify"}>
-
-                        <label htmlFor="image">
-                            <div className={"uploadImage"}>
-                                <div className={"camera"}>
-                                    <Camera/>
-                                    Upload Banner Image
-                                    <input type={"file"} id={"image"}/>
-                                </div>
-                                    <BoxSelect className={"boxSelect"}/>
-                            </div>
-                        </label>
-                        <div className={"verify"}>
-                            <div className={"role"}>
-                                <p>Current Role</p>
-                                <h6>{user?.role}</h6>
-                            </div>
-                            <div className={"areaAbout"}>
-                                <label htmlFor="about">About You</label>
-                                <textarea id="about" name="about" onChange={onChangeInput}/>
-                            </div>
-                            <div className={"saveButton"}>
-                                <Link to={""}>Cancel</Link>
-                                <button className={"loginButton"} onClick={onEdit}>Get Verified</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                    <BoxSelect className={"boxSelect"} />
+                  </>
+                )}
+              </div>
+            </label>
+            <div className={"verify"}>
+              <div className={"role"}>
+                <p>Current Role</p>
+                <h6>{user?.role}</h6>
+              </div>
+              <div className={"areaAbout"}>
+                <label htmlFor="about">About You</label>
+                <textarea id="about" name="about" onChange={onChangeInput} />
+              </div>
+              <div className={"saveButton"}>
+                <Link to={"/account/settings"}>Cancel</Link>
+                <button className={"loginButton"} onClick={handlePost}>
+                  Get Verified
+                </button>
+              </div>
             </div>
-            <Footer/>
+          </div>
         </div>
-    )
-}
+      </div>
+      <Footer />
+    </div>
+  );
+};

@@ -12,7 +12,7 @@ import (
 	"time"
 )
 
-func NewRouter(playlist *controller.PlaylistController, user *controller.UserController, h *sse.NotificationSSE, follow *controller.FollowController, song *controller.SongController, album *controller.AlbumController, queue *controller.QueueController, play *controller.PlayController) *gin.Engine {
+func NewRouter(playlist *controller.PlaylistController, user *controller.UserController, h *sse.NotificationSSE, follow *controller.FollowController, song *controller.SongController, album *controller.AlbumController, queue *controller.QueueController, play *controller.PlayController, artist *controller.ArtistController, setting *controller.NotificationSettingController, search *controller.SearchController, adv *controller.AdvertisementController) *gin.Engine {
 	router := gin.Default()
 
 	router.Use(cors.New(cors.Config{
@@ -25,18 +25,33 @@ func NewRouter(playlist *controller.PlaylistController, user *controller.UserCon
 	pool := websockets.NewPool()
 	go pool.Start()
 
+	router.Static("/public/images/", "./assets/images")
+	router.Static("/public/adv/", "./assets/advertise/image")
+	router.Static("/public/songs/", "./assets/songs")
+
 	router.GET("/ws/chat", pool.Chat)
 
 	router.POST("/user/login", user.Authenticate)
 	router.POST("/user/edit-prof", user.UpdateUserProfile)
 	router.GET("/user/current-user", user.GetCurrentUser)
-	router.GET("/user/update-ver", user.UpdateVerificationStatus)
+	router.POST("/user/update-ver", user.UpdateVerificationStatus)
 	router.GET("/auth/google/callback", user.GoogleCallback)
 	router.PUT("/user/register", user.Register)
 	router.GET("/user/get", user.GetUserById)
+	router.GET("/user/get-all", user.GetAllUser)
+	router.POST("/user/sign-out", user.SignOut)
+	router.POST("/user/forgot-password", user.Forgot)
+	router.POST("/user/reset-password", user.ResetPassword)
+	router.GET("/user/valid-verify", user.GetUserByVerifyLink)
+	router.GET("/user/logout", user.Logout)
+	router.POST("/user/update-pic", user.UpdateProfilePicture)
 
 	router.GET("/playlist", playlist.GetPlaylistByUserId)
 	router.GET("/playlist-id", playlist.GetPlaylistById)
+	router.POST("/playlist-detail", playlist.CreateDetail)
+	router.DELETE("/playlist-detail", playlist.DeletePlaylistDetail)
+	router.DELETE("/playlist", playlist.DeletePlaylist)
+	router.POST("/playlist/create", playlist.CreatePlaylist)
 
 	router.GET("/get-following", follow.GetFollowing)
 	router.GET("/get-follower", follow.GetFollower)
@@ -44,10 +59,11 @@ func NewRouter(playlist *controller.PlaylistController, user *controller.UserCon
 	router.PUT("/follow", follow.Create)
 	router.DELETE("/follow", follow.DeleteFollow)
 
-	router.GET("/album/get-title", album.GetAlbumByTitle)
 	router.GET("/album/get-artist", album.GetAlbumByArtist)
 	router.GET("/album/get-random", album.GetRandomAlbum)
+	router.POST("/album/create", album.CreateAlbum)
 
+	router.POST("/song/create", song.CreateSong)
 	router.GET("/song/get-all", song.GetAllSong)
 	router.GET("/song/get", song.GetSongById)
 	router.GET("/song/get-by-artist", song.GetSongByArtist)
@@ -58,8 +74,23 @@ func NewRouter(playlist *controller.PlaylistController, user *controller.UserCon
 	router.GET("/queue/dequeue", queue.Dequeue)
 	router.GET("/queue/get", queue.GetQueue)
 	router.GET("/queue/get-all", queue.GetAllQueue)
+	router.POST("/queue/remove", queue.RemoveFromQueue)
 
-	router.GET("/play/get-last", play.GetLastPlayedSongByUser)
+	router.GET("/play/get-last", play.Get8LastPlayedSongByUser)
+	router.GET("/play/get-last-rec", play.GetLastPlayedSongByUser)
+
+	router.GET("/artist/get", artist.GetArtistByUserId)
+	router.GET("/artist/get-id", artist.GetArtistByArtistId)
+	router.POST("/artist/create", artist.CreateArtist)
+	router.PUT("/artist/update", artist.UpdateVerifyArtist)
+	router.DELETE("/artist/delete", artist.DeleteArtist)
+	router.GET("/artist/get-unverified", artist.GetUnverifiedArtist)
+
+	router.POST("/setting/update", setting.UpdateSetting)
+
+	router.GET("/search/get", search.Search)
+
+	router.GET("/adv/get", adv.GetRandomAdvertisement)
 
 	//careerGroup := router.Group("/career")
 	//careerGroup.Use(middleware.RoleMiddleware(user.UserService, "JLA"))
@@ -81,7 +112,8 @@ func NewRouter(playlist *controller.PlaylistController, user *controller.UserCon
 
 	//TESTING
 	router.GET("/send", func(c *gin.Context) {
-		h.NotificationChannel["d3cc72e7-f998-4f2f-b45a-1ab86b8bd233"] <- model.Notification{
+		id := c.Query("id")
+		h.NotificationChannel[id] <- model.Notification{
 			NotifyId: utils.GenerateUUID(),
 			UserId:   "d3cc72e7-f998-4f2f-b45a-1ab86b8bd233",
 			Title:    "Tes",
@@ -90,6 +122,9 @@ func NewRouter(playlist *controller.PlaylistController, user *controller.UserCon
 			ReadAt:   time.Time{},
 		}
 	})
+
+	router.GET("/music", song.StreamMusic)
+	router.GET("/adv", adv.StreamAdv)
 
 	return router
 }

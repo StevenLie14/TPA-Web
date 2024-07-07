@@ -14,3 +14,8 @@ type UserUpdateRequest struct {
 	Country string    `json:"country" validate:"required"`
 	Dob     time.Time `json:"dob" validate:"required"`
 }
+
+type ResetPasswordRequest struct {
+	UserId   string `json:"userId" validate:"required"`
+	Password string `json:"password" validate:"required"`
+}

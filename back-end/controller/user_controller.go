@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -179,7 +180,7 @@ func (u *UserController) GetCurrentUser(ctx *gin.Context) {
 }
 
 func (u *UserController) Register(ctx *gin.Context) {
-	req := request.AuthRequest{}
+	req := request.UserRequest{}
 	err := ctx.ShouldBindJSON(&req)
 	if err != nil {
 		webResponse := response.WebResponse{
@@ -205,7 +206,7 @@ func (u *UserController) Register(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, webResponse)
 		return
 	}
-	link := "http://localhost:5173/verify-email?id=" + user.UserId
+	link := "http://localhost:5173/verify-email?id=" + user.VerifyLink
 	err = utils.SendEmail(user.Email, "Verification Email", fmt.Sprintf("Please click this link to verify your email: <a href=\"%s\">Verify Email</a> ", link))
 	if err != nil {
 		webResponse := response.WebResponse{
@@ -295,16 +296,216 @@ func (u *UserController) UpdateUserProfile(ctx *gin.Context) {
 
 }
 
-//func (c *CareerController) FindAll(ctx *gin.Context) {
-//	fmt.Println("Hello World!")
-//	careers := c.careerService.FindAll()
-//	webResponse := response.WebResponse{
-//		Code:   http.StatusOK,
-//		Status: "OK",
-//		Data:   careers,
-//	}
-//
-//	ctx.Header("Content-Type", "application/json")
-//	ctx.JSON(http.StatusOK, webResponse)
-//
-//}
+func (u *UserController) GetAllUser(ctx *gin.Context) {
+	users, err := u.UserService.GetAllUser()
+	if err != nil {
+		webResponse := response.WebResponse{
+			Code:    http.StatusBadRequest,
+			Message: err.Error(),
+			Data:    nil,
+		}
+
+		ctx.Header("Content-Type", "application/json")
+		ctx.JSON(http.StatusBadRequest, webResponse)
+		return
+	}
+
+	webResponse := response.WebResponse{
+		Code:    http.StatusOK,
+		Message: "OK",
+		Data:    users,
+	}
+
+	ctx.Header("Content-Type", "application/json")
+	ctx.JSON(http.StatusOK, webResponse)
+}
+
+func (u *UserController) SignOut(ctx *gin.Context) {
+	ctx.SetCookie("jwt", "", -1, "/", "", false, true)
+	webResponse := response.WebResponse{
+		Code:    http.StatusOK,
+		Message: "OK",
+		Data:    "Sign Out Success",
+	}
+
+	ctx.Header("Content-Type", "application/json")
+	ctx.JSON(http.StatusOK, webResponse)
+}
+
+func (u *UserController) Forgot(ctx *gin.Context) {
+	email := ctx.Query("email")
+	user, err := u.UserService.ForgotPassword(email)
+	if err != nil {
+		webResponse := response.WebResponse{
+			Code:    http.StatusBadRequest,
+			Message: err.Error(),
+			Data:    nil,
+		}
+
+		ctx.Header("Content-Type", "application/json")
+		ctx.JSON(http.StatusBadRequest, webResponse)
+		return
+	}
+	link := "http://localhost:5173/reset-pass?id=" + user.VerifyLink
+	err = utils.SendEmail(user.Email, "Verification Email", fmt.Sprintf("Please click this link to verify your email: <a href=\"%s\">Verify Email</a> ", link))
+
+	if err != nil {
+		webResponse := response.WebResponse{
+			Code:    http.StatusBadRequest,
+			Message: err.Error(),
+			Data:    nil,
+		}
+
+		ctx.Header("Content-Type", "application/json")
+		ctx.JSON(http.StatusBadRequest, webResponse)
+		return
+	}
+
+	webResponse := response.WebResponse{
+		Code:    http.StatusOK,
+		Message: "OK",
+		Data:    "Success",
+	}
+
+	ctx.Header("Content-Type", "application/json")
+	ctx.JSON(http.StatusOK, webResponse)
+}
+
+func (u *UserController) GetUserByVerifyLink(ctx *gin.Context) {
+	link := ctx.Query("id")
+	user, err := u.UserService.GetUserByVerifyLink(link)
+	if err != nil {
+		webResponse := response.WebResponse{
+			Code:    http.StatusBadRequest,
+			Message: err.Error(),
+			Data:    nil,
+		}
+
+		ctx.Header("Content-Type", "application/json")
+		ctx.JSON(http.StatusBadRequest, webResponse)
+		return
+	}
+	webResponse := response.WebResponse{
+		Code:    http.StatusOK,
+		Message: "OK",
+		Data:    user,
+	}
+
+	ctx.Header("Content-Type", "application/json")
+	ctx.JSON(http.StatusOK, webResponse)
+}
+
+func (u *UserController) ResetPassword(ctx *gin.Context) {
+	req := request.ResetPasswordRequest{}
+	err := ctx.ShouldBindJSON(&req)
+	if err != nil {
+		webResponse := response.WebResponse{
+			Code:    http.StatusBadRequest,
+			Message: err.Error(),
+			Data:    nil,
+		}
+
+		ctx.Header("Content-Type", "application/json")
+		ctx.JSON(http.StatusBadRequest, webResponse)
+		return
+	}
+
+	err = u.UserService.ChangePassword(req.Password, req.UserId)
+	if err != nil {
+		webResponse := response.WebResponse{
+			Code:    http.StatusBadRequest,
+			Message: err.Error(),
+			Data:    nil,
+		}
+
+		ctx.Header("Content-Type", "application/json")
+		ctx.JSON(http.StatusBadRequest, webResponse)
+		return
+	}
+	webResponse := response.WebResponse{
+		Code:    http.StatusOK,
+		Message: "OK",
+		Data:    "Success",
+	}
+
+	ctx.Header("Content-Type", "application/json")
+	ctx.JSON(http.StatusOK, webResponse)
+}
+
+func (u *UserController) Logout(ctx *gin.Context) {
+	err := u.UserService.Logout(ctx.Query("id"))
+	if err != nil {
+		webResponse := response.WebResponse{
+			Code:    http.StatusBadRequest,
+			Message: err.Error(),
+			Data:    nil,
+		}
+
+		ctx.Header("Content-Type", "application/json")
+		ctx.JSON(http.StatusBadRequest, webResponse)
+		return
+	}
+	ctx.SetCookie("jwt", "", -1, "/", "", false, true)
+	webResponse := response.WebResponse{
+		Code:    http.StatusOK,
+		Message: "OK",
+		Data:    "Success",
+	}
+
+	ctx.Header("Content-Type", "application/json")
+	ctx.JSON(http.StatusOK, webResponse)
+}
+
+func (u *UserController) UpdateProfilePicture(ctx *gin.Context) {
+	file, err := ctx.FormFile("image")
+	artistId := ctx.PostForm("userId")
+	if err != nil {
+		webResponse := response.WebResponse{
+			Code:    http.StatusBadRequest,
+			Message: err.Error(),
+			Data:    nil,
+		}
+
+		ctx.Header("Content-Type", "application/json")
+		ctx.JSON(http.StatusBadRequest, webResponse)
+		return
+	}
+	filename := strings.Replace(utils.GenerateUUID(), "-", "", -1)
+	fileExt := strings.Split(file.Filename, ".")[1]
+	image := fmt.Sprintf("%s.%s", filename, fileExt)
+	err = ctx.SaveUploadedFile(file, fmt.Sprintf("./assets/images/%s", image))
+	if err != nil {
+		webResponse := response.WebResponse{
+			Code:    http.StatusBadRequest,
+			Message: err.Error(),
+			Data:    nil,
+		}
+
+		ctx.Header("Content-Type", "application/json")
+		ctx.JSON(http.StatusBadRequest, webResponse)
+		return
+	}
+	imageUrl := fmt.Sprintf("http://localhost:4000/public/images/%s", image)
+	err = u.UserService.UpdateProfilePicture(artistId, imageUrl)
+	if err != nil {
+		webResponse := response.WebResponse{
+			Code:    http.StatusBadRequest,
+			Message: err.Error(),
+			Data:    nil,
+		}
+
+		ctx.Header("Content-Type", "application/json")
+		ctx.JSON(http.StatusBadRequest, webResponse)
+		return
+	}
+
+	webResponse := response.WebResponse{
+		Code:    http.StatusOK,
+		Message: "OK",
+		Data:    nil,
+	}
+
+	ctx.Header("Content-Type", "application/json")
+	ctx.JSON(http.StatusOK, webResponse)
+
+}
