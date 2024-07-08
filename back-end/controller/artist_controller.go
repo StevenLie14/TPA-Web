@@ -212,8 +212,9 @@ func (controller *ArtistController) GetUnverifiedArtist(ctx *gin.Context) {
 
 func (controller *ArtistController) DeleteArtist(ctx *gin.Context) {
 	artistId := ctx.Query("id")
+	userId := ctx.Query("userId")
 
-	err := controller.ArtistService.DeleteArtist(artistId)
+	err := controller.ArtistService.DeleteArtist(userId, artistId)
 	if err != nil {
 		webResponse := response.WebResponse{
 			Code:    http.StatusBadRequest,

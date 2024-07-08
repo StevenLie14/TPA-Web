@@ -111,7 +111,10 @@ func (p *PlaylistController) CreateDetail(ctx *gin.Context) {
 
 func (p *PlaylistController) DeletePlaylistDetail(ctx *gin.Context) {
 	id := ctx.Query("id")
-	err := p.PlaylistService.DeletePlaylistDetailByID(id)
+	userId := ctx.Query("userId")
+	detailId := ctx.Query("detId")
+
+	err := p.PlaylistService.DeletePlaylistDetailByID(userId, id, detailId)
 	if err != nil {
 		webResponse := response.WebResponse{
 			Code:    http.StatusBadRequest,
@@ -136,7 +139,8 @@ func (p *PlaylistController) DeletePlaylistDetail(ctx *gin.Context) {
 
 func (p *PlaylistController) DeletePlaylist(ctx *gin.Context) {
 	id := ctx.Query("id")
-	err := p.PlaylistService.DeletePlaylistByID(id)
+	userId := ctx.Query("userId")
+	err := p.PlaylistService.DeletePlaylistByID(userId, id)
 	if err != nil {
 		webResponse := response.WebResponse{
 			Code:    http.StatusBadRequest,

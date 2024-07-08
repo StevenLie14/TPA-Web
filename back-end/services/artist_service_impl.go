@@ -99,7 +99,7 @@ func (service *ArtistServiceImpl) UpdateVerifyArtist(artistId string) error {
 		return err
 	}
 	now := time.Now()
-	err = service.ArtistRepository.UpdateVerifyArtist(artistId, now)
+	err = service.ArtistRepository.UpdateVerifyArtist(artist.UserId, artistId, now)
 	if err != nil {
 		return err
 	}
@@ -124,8 +124,8 @@ func (service *ArtistServiceImpl) GetUnverifiedArtist() (res []response.ArtistRe
 	return res, nil
 }
 
-func (service *ArtistServiceImpl) DeleteArtist(artistId string) error {
-	err := service.ArtistRepository.DeleteArtist(artistId)
+func (service *ArtistServiceImpl) DeleteArtist(userId string, artistId string) error {
+	err := service.ArtistRepository.DeleteArtist(userId, artistId)
 	if err != nil {
 		return err
 	}

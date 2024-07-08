@@ -4,6 +4,8 @@ import (
 	"back-end/data/response"
 	"back-end/database"
 	"back-end/model"
+	"back-end/utils"
+	"encoding/json"
 	"gorm.io/gorm"
 )
 
@@ -30,8 +32,26 @@ func (a AlbumRepositoryImpl) GetAlbumsByTitle(title string) (res []response.Albu
 }
 
 func (a AlbumRepositoryImpl) GetAlbumsByArtist(artistId string) (res []model.Album, err error) {
-	err = a.DB.Where("artist_id = ?", artistId).Preload("Artist").Find(&res).Error
-	return
+	album, err := a.rdb.Get(utils.AlbumKey + artistId)
+	if err != nil {
+		err = a.DB.Where("artist_id = ?", artistId).Preload("Artist").Find(&res).Error
+
+		if err != nil {
+			return res, err
+		}
+		resJSON, err := json.Marshal(res)
+		if err != nil {
+			return res, err
+		}
+		_ = a.rdb.Set(utils.AlbumKey+artistId, string(resJSON))
+
+		return res, nil
+	} else {
+		if err := json.Unmarshal([]byte(album), &res); err != nil {
+			return res, err
+		}
+		return res, nil
+	}
 }
 
 func (a AlbumRepositoryImpl) GetRandomAlbum() (res []model.Album, err error) {
@@ -40,6 +60,10 @@ func (a AlbumRepositoryImpl) GetRandomAlbum() (res []model.Album, err error) {
 }
 
 func (a AlbumRepositoryImpl) CreateAlbum(album model.Album) error {
-	err := a.DB.Create(&album).Error
+	err := a.rdb.Del(utils.AlbumKey + album.ArtistId)
+	if err != nil {
+		return err
+	}
+	err = a.DB.Create(&album).Error
 	return err
 }

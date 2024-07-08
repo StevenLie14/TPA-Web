@@ -26,6 +26,7 @@ export const ControlMusic = () => {
     dequeue,
     advertise,
     resetAdv,
+    closeAdvertise,
   } = useSong();
   const { user } = useAuth();
 
@@ -68,8 +69,8 @@ export const ControlMusic = () => {
       // setCurrentTime(0);
       // localStorage.setItem("duration", "0");
       if (advertise != null) {
+        closeAdvertise();
         resetAdv();
-        showDetailHandler("");
       }
       dequeue(user);
     };

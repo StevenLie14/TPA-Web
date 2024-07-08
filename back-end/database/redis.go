@@ -98,3 +98,15 @@ func (r Redis) LRem(key string, count int64, value string) error {
 	}
 	return nil
 }
+
+func (r Redis) AddToSet(key string, members ...string) error {
+	return r.rdb.SAdd(context.Background(), key, members).Err()
+}
+
+func (r Redis) GetSetMembers(key string) ([]string, error) {
+	return r.rdb.SMembers(context.Background(), key).Result()
+}
+
+func (r Redis) RemoveFromSet(key string, members ...string) error {
+	return r.rdb.SRem(context.Background(), key, members).Err()
+}

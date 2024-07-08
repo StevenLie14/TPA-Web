@@ -27,8 +27,14 @@ export const ArtistVerificationPage = () => {
   };
 
   const onCancel = (artistId: string) => {
+    if (user == null) return;
     axios
-      .delete("http://localhost:4000/artist/delete?id=" + artistId)
+      .delete(
+        "http://localhost:4000/artist/delete?id=" +
+          artistId +
+          "&userId=" +
+          user.user_id,
+      )
       .then((res) => {
         getUnverified();
         console.log(res);

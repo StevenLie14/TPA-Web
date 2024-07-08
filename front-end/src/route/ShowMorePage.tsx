@@ -161,7 +161,7 @@ export const ShowMorePage = () => {
               <div className="cardWrapper">
                 {songs.length > 0 ? (
                   songs.map((song, index) => (
-                    <SongCard key={index} songs={song} />
+                    <SongCard key={index} songs={song} play={true} />
                   ))
                 ) : (
                   <div>No recommendations available</div>
@@ -177,7 +177,7 @@ export const ShowMorePage = () => {
               <div className="cardWrapper">
                 {recommendation.length > 0 ? (
                   recommendation.map((album, index) => (
-                    <AlbumCard key={index} album={album} />
+                    <AlbumCard key={index} album={album} play={false} />
                   ))
                 ) : (
                   <div>No recommendations available</div>
@@ -203,7 +203,11 @@ export const ShowMorePage = () => {
               </div>
               <div className="cardWrapper">
                 {gallery?.map((play) => (
-                  <AlbumCard album={play.song.album} key={play.playId} />
+                  <AlbumCard
+                    album={play.song.album}
+                    key={play.playId}
+                    play={false}
+                  />
                 ))}
               </div>
             </div>
@@ -215,7 +219,7 @@ export const ShowMorePage = () => {
               </div>
               <div className="cardWrapper">
                 {playlist.map((play) => (
-                  <Card playlist={play} key={play.playlistId} />
+                  <Card playlist={play} key={play.playlistId} play={false} />
                 ))}
               </div>
             </div>

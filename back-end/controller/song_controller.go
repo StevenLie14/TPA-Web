@@ -231,8 +231,9 @@ func (s SongController) StreamMusic(c *gin.Context) {
 
 	c.Header("Content-Type", "audio/mpeg")
 	c.Header("Transfer-Encoding", "chunked")
+	//c.Header("Content-Encoding", "gzip")
 
-	buffer := make([]byte, 1024*1024)
+	buffer := make([]byte, 1024*10)
 	for {
 		bytesRead, err := file.Read(buffer)
 		if err != nil && err != io.EOF {

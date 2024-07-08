@@ -8,6 +8,7 @@ export const SidePlaylist = ({ playlist }: { playlist: Playlist }) => {
       onClick={() => {
         navigate("/playlist/" + playlist.playlistId);
       }}
+      style={{ cursor: "pointer" }}
       key={playlist.playlistId}
     >
       <img src={playlist.image} alt={""} />

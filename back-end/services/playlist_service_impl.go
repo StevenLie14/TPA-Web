@@ -102,16 +102,16 @@ func (p PlaylistServiceImpl) CreateDetail(playlistDetail request.PlayListDetailR
 		PlaylistId:       playlistDetail.PlaylistID,
 		SongId:           playlistDetail.SongID,
 	}
-	err = p.PlayListRepo.CreateDetail(playDetail)
+	err = p.PlayListRepo.CreateDetail(playlistDetail.UserId, playDetail)
 	return err
 }
 
-func (p PlaylistServiceImpl) DeletePlaylistDetailByID(id string) error {
-	err := p.PlayListRepo.DeletePlaylistDetailByID(id)
+func (p PlaylistServiceImpl) DeletePlaylistDetailByID(userId string, id string, detailId string) error {
+	err := p.PlayListRepo.DeletePlaylistDetailByID(userId, id, detailId)
 	return err
 }
 
-func (p PlaylistServiceImpl) DeletePlaylistByID(id string) error {
-	err := p.PlayListRepo.DeletePlaylistByID(id)
+func (p PlaylistServiceImpl) DeletePlaylistByID(userId string, id string) error {
+	err := p.PlayListRepo.DeletePlaylistByID(userId, id)
 	return err
 }

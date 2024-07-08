@@ -74,7 +74,9 @@ export const Dequeue = atom(null, (get, set, user: User | null) => {
       });
     return;
   }
+
   if (get(advertisement) == null) {
+    console.log("???");
     void axios
       .get("http://localhost:4000/adv/get")
       .then((res: AxiosResponse<WebResponse<Advertisement>>) => {
@@ -90,7 +92,7 @@ export const Dequeue = atom(null, (get, set, user: User | null) => {
 });
 
 export const ResetAdv = atom(null, (get, set) => {
-  if (get(adv) >= 5 && get(advertisement) != null) {
+  if (get(adv) >= 5 || get(advertisement) != null) {
     set(adv, 0);
     set(advertisement, null);
   }
@@ -141,6 +143,7 @@ interface IProps {
   removeQueue: (index: number, user: User | null) => void;
   advertise: Advertisement | null;
   resetAdv: () => void;
+  closeAdvertise: () => void;
 }
 
 export const SongProvider = ({ children }: { children: ReactNode }) => {
@@ -161,11 +164,12 @@ export const SongProvider = ({ children }: { children: ReactNode }) => {
   const [advertise] = useAtom(advertisement);
 
   useEffect(() => {
-    console.log(advertisement);
+    if (user == null) return;
     if (advCount > 5) {
+      dequeue(user);
       setShowDetail("advertise");
     }
-  }, [advCount, setAdvCount]);
+  }, [advCount, setAdvCount, user]);
 
   useEffect(() => {
     if (song != null) return;
@@ -187,7 +191,7 @@ export const SongProvider = ({ children }: { children: ReactNode }) => {
   }, [user]);
 
   useEffect(() => {
-    if (song == null) return;
+    if (song == null || advCount > 5) return;
     axios
       .get("http://localhost:4000/music?id=" + song.songId, {
         responseType: "blob",
@@ -233,6 +237,7 @@ export const SongProvider = ({ children }: { children: ReactNode }) => {
         audioRef.current?.pause();
         audioRef.current = null;
         audioRef.current = new Audio(audioURL);
+        // audioRef.current.muted = true;
         audioRef.current.play().catch((error: unknown) => {
           console.log(error);
           return;
@@ -281,11 +286,16 @@ export const SongProvider = ({ children }: { children: ReactNode }) => {
   const [showDetail, setShowDetail] = useState<string>("");
 
   const showDetailHandler = (type: string) => {
+    if (advCount >= 5 && type !== "advertise") return;
     if (showDetail === type) {
       setShowDetail("");
     } else {
       setShowDetail(type);
     }
+  };
+
+  const closeAdvertise = () => {
+    setShowDetail("");
   };
 
   const changeSong = (songId: string) => {
@@ -321,6 +331,7 @@ export const SongProvider = ({ children }: { children: ReactNode }) => {
     removeQueue,
     advertise,
     resetAdv,
+    closeAdvertise,
   };
 
   return <SongContext.Provider value={values}>{children}</SongContext.Provider>;

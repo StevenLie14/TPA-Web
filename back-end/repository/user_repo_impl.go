@@ -5,7 +5,6 @@ import (
 	"back-end/model"
 	"back-end/utils"
 	"encoding/json"
-	"fmt"
 	"gorm.io/gorm"
 	"time"
 )
@@ -28,8 +27,10 @@ func (u UserRepositoryImpl) FindAll() (users []model.User, err error) {
 
 	redisUser, err := u.rdb.Get("users")
 	if err != nil {
-		fmt.Println("redis")
 		err = u.DB.Where("verified_at IS NOT NULL").Preload("NotificationSetting").Find(&users).Error
+		if err != nil {
+			return
+		}
 		userJSON, err := json.Marshal(users)
 		if err != nil {
 			return users, err
@@ -70,6 +71,18 @@ func (u UserRepositoryImpl) Update(user model.User) (err error) {
 	if err != nil {
 		return err
 	}
+	err = u.rdb.Del(utils.PlaylistKey + user.UserId)
+	if err != nil {
+		return err
+	}
+	err = u.rdb.Del(utils.PlaylistDetailKey + user.UserId)
+	if err != nil {
+		return err
+	}
+	err = u.rdb.Del("users")
+	if err != nil {
+		return err
+	}
 	err = u.DB.Updates(&user).Error
 	return
 }
@@ -84,12 +97,32 @@ func (u UserRepositoryImpl) UpdateRole(userId string) (err error) {
 	if err != nil {
 		return err
 	}
+	err = u.rdb.Del(utils.PlaylistKey + userId)
+	if err != nil {
+		return err
+	}
+	err = u.rdb.Del(utils.PlaylistDetailKey + userId)
+	if err != nil {
+		return err
+	}
+	err = u.rdb.Del("users")
+	if err != nil {
+		return err
+	}
 	err = u.DB.Model(&model.User{}).Where("user_id = ?", userId).Update("role", "Artist").Error
 	return
 }
 
 func (u UserRepositoryImpl) UpdateGoogleId(userId string, email string, googleId string) (err error) {
 	err = u.rdb.Del(utils.CurrentUserKey + userId)
+	if err != nil {
+		return err
+	}
+	err = u.rdb.Del(utils.PlaylistKey + userId)
+	if err != nil {
+		return err
+	}
+	err = u.rdb.Del("users")
 	if err != nil {
 		return err
 	}
@@ -101,6 +134,10 @@ func (u UserRepositoryImpl) GetCurrentUser(userId string) (user model.User, err 
 	redisUser, err := u.rdb.Get(utils.CurrentUserKey + userId)
 	if err != nil {
 		err = u.DB.Where("user_id = ?", userId).Preload("NotificationSetting").First(&user).Error
+
+		if err != nil {
+			return
+		}
 		userJSON, err := json.Marshal(user)
 		if err != nil {
 			return user, err
@@ -132,6 +169,20 @@ func (u UserRepositoryImpl) UpdateRegister(userId string, verifyLink string, use
 		"username":    username,
 		"password":    hash,
 	}).Error
+	err = u.rdb.Del(utils.PlaylistKey + userId)
+	if err != nil {
+		return err
+	}
+
+	err = u.rdb.Del(utils.PlaylistDetailKey + userId)
+	if err != nil {
+		return err
+	}
+
+	err = u.rdb.Del("users")
+	if err != nil {
+		return err
+	}
 	return
 }
 
@@ -150,6 +201,20 @@ func (u UserRepositoryImpl) UpdateProfilePicture(userId string, avatar string) e
 	if err != nil {
 		return err
 	}
+	err = u.rdb.Del(utils.PlaylistKey + userId)
+	if err != nil {
+		return err
+	}
+
+	err = u.rdb.Del(utils.PlaylistDetailKey + userId)
+	if err != nil {
+		return err
+	}
+
+	err = u.rdb.Del("users")
+	if err != nil {
+		return err
+	}
 	err = u.DB.Model(&model.User{}).Where("user_id = ?", userId).Update("avatar", avatar).Error
 	return err
 }
@@ -159,6 +224,22 @@ func (u UserRepositoryImpl) UpdateProfile(userId string, dob time.Time, country 
 	if err != nil {
 		return err
 	}
+
+	err = u.rdb.Del(utils.PlaylistKey + userId)
+	if err != nil {
+		return err
+	}
+
+	err = u.rdb.Del(utils.PlaylistDetailKey + userId)
+	if err != nil {
+		return err
+	}
+
+	err = u.rdb.Del("users")
+	if err != nil {
+		return err
+	}
+
 	err = u.DB.Model(&model.User{}).Where("user_id = ?", userId).Updates(map[string]interface{}{
 		"dob":     dob,
 		"country": country,

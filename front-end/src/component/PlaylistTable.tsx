@@ -23,9 +23,15 @@ export const PlaylistTable = ({
 
   const handleDelete = (e: React.MouseEvent<SVGSVGElement>) => {
     e.stopPropagation();
+    if (user == null) return;
     axios
       .delete(
-        "http://localhost:4000/playlist-detail?id=" + detail.playlistDetailId,
+        "http://localhost:4000/playlist-detail?id=" +
+          detail.playlistDetailId +
+          "&userId=" +
+          user.user_id +
+          "&detId=" +
+          detail.playlistId,
       )
       .then((res) => {
         console.log(res);

@@ -4,7 +4,8 @@ import (
 	"back-end/data/response"
 	"back-end/database"
 	"back-end/model"
-	"fmt"
+	"back-end/utils"
+	"encoding/json"
 	"gorm.io/gorm"
 )
 
@@ -18,16 +19,48 @@ func NewSongRepositoryImpl(DB *gorm.DB, rdb *database.Redis) *SongRepositoryImpl
 }
 
 func (s SongRepositoryImpl) GetAllSong() (res []model.Song, err error) {
-	fmt.Println("GetAllSong")
-	err = s.DB.Preload("Artist").Preload("Artist.User").Preload("Album").Find(&res).Error
+	songs, err := s.rdb.Get(utils.SongKey)
+	if err != nil {
+		err = s.DB.Preload("Artist").Preload("Artist.User").Preload("Album").Find(&res).Error
+		if err != nil {
+			return res, err
+		}
+		resJSON, err := json.Marshal(res)
+		if err != nil {
+			return res, err
+		}
+		_ = s.rdb.Set(utils.SongKey, string(resJSON))
 
-	return
+		return res, nil
+	} else {
+		if err := json.Unmarshal([]byte(songs), &res); err != nil {
+			return res, err
+		}
+		return res, nil
+	}
 }
 
 func (s SongRepositoryImpl) GetSongById(id string) (res model.Song, err error) {
-	fmt.Println("GetSongById", id)
-	err = s.DB.Where("song_id = ?", id).Preload("Artist").Preload("Artist.User").Preload("Play").Preload("Album").Find(&res).Error
-	return
+	songs, err := s.rdb.Get(utils.SongKey + id)
+	if err != nil {
+		err = s.DB.Where("song_id = ?", id).Preload("Artist").Preload("Artist.User").Preload("Play").Preload("Album").Find(&res).Error
+		if err != nil {
+			return res, err
+		}
+		resJSON, err := json.Marshal(res)
+		if err != nil {
+			return res, err
+		}
+		_ = s.rdb.Set(utils.SongKey+id, string(resJSON))
+
+		return res, nil
+	} else {
+		if err := json.Unmarshal([]byte(songs), &res); err != nil {
+			return res, err
+		}
+		return res, nil
+	}
+
 }
 
 func (s SongRepositoryImpl) FindSongByTitle(title string) (res []response.SongSearch, err error) {
@@ -86,16 +119,56 @@ func (s SongRepositoryImpl) GetSortedSong() (res []model.Song, err error) {
 }
 
 func (s SongRepositoryImpl) GetSongByArtist(artistId string) (res []model.Song, err error) {
-	err = s.DB.Where("artist_id = ?", artistId).Preload("Artist").Preload("Artist.User").Preload("Play").Preload("Album").Find(&res).Error
-	return
+	songs, err := s.rdb.Get(utils.SongKey + artistId)
+	if err != nil {
+		err = s.DB.Where("artist_id = ?", artistId).Preload("Artist").Preload("Artist.User").Preload("Play").Preload("Album").Find(&res).Error
+		if err != nil {
+			return res, err
+		}
+		resJSON, err := json.Marshal(res)
+		if err != nil {
+			return res, err
+		}
+		_ = s.rdb.Set(utils.SongKey+artistId, string(resJSON))
+
+		return res, nil
+	} else {
+		if err := json.Unmarshal([]byte(songs), &res); err != nil {
+			return res, err
+		}
+		return res, nil
+	}
+
 }
 
 func (s SongRepositoryImpl) GetSongByAlbum(albumId string) (res []model.Song, err error) {
-	err = s.DB.Where("album_id = ?", albumId).Preload("Artist").Preload("Artist.User").Preload("Play").Preload("Album").Find(&res).Error
-	return
+	songs, err := s.rdb.Get(utils.SongKey + albumId)
+	if err != nil {
+		err = s.DB.Where("album_id = ?", albumId).Preload("Artist").Preload("Artist.User").Preload("Play").Preload("Album").Find(&res).Error
+
+		if err != nil {
+			return res, err
+		}
+		resJSON, err := json.Marshal(res)
+		if err != nil {
+			return res, err
+		}
+		_ = s.rdb.Set(utils.SongKey+albumId, string(resJSON))
+
+		return res, nil
+	} else {
+		if err := json.Unmarshal([]byte(songs), &res); err != nil {
+			return res, err
+		}
+		return res, nil
+	}
 }
 
 func (s SongRepositoryImpl) CreateSong(song model.Song) error {
-	err := s.DB.Create(&song).Error
+	err := s.rdb.Del(utils.SongKey)
+	if err != nil {
+		return err
+	}
+	err = s.DB.Create(&song).Error
 	return err
 }

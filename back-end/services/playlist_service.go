@@ -11,6 +11,6 @@ type PlaylistService interface {
 	GetByUserID(id string) (res []response.PlayListResponse, err error)
 	GetPlaylistByID(id string) (res response.PlayListResponse, err error)
 	CreateDetail(playlistDetail request.PlayListDetailRequest) error
-	DeletePlaylistByID(id string) error
-	DeletePlaylistDetailByID(id string) error
+	DeletePlaylistByID(userId string, id string) error
+	DeletePlaylistDetailByID(userId string, id string, detailId string) error
 }

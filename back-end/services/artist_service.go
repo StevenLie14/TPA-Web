@@ -12,5 +12,5 @@ type ArtistService interface {
 	UpdateVerifyArtist(artistId string) error
 	GetUnverifiedArtist() (res []response.ArtistResponse, err error)
 	GetUnverifiedArtistByArtistId(artistId string) (res response.ArtistResponse, err error)
-	DeleteArtist(artistId string) error
+	DeleteArtist(userId string, artistId string) error
 }

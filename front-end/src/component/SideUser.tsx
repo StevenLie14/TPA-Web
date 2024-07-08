@@ -11,7 +11,11 @@ export const SideUser = ({ user }: { user: User }) => {
     }
   };
   return (
-    <div className="sideUser" onClick={handleNavigate}>
+    <div
+      className="sideUser"
+      onClick={handleNavigate}
+      style={{ cursor: "pointer" }}
+    >
       <img
         src={user.avatar ? user.avatar : "/assets/download (6).png"}
         alt={""}

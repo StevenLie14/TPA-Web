@@ -8,6 +8,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { ErrorModal } from "../component/ErrorModal.tsx";
 import { Footer } from "../component/Footer.tsx";
 import { Navbar } from "../component/Navbar.tsx";
+import { SuccessModal } from "../component/SuccessModal.tsx";
 import { useAuth } from "../context/UseAuth.tsx";
 
 export const GetVerifiedPage = () => {
@@ -15,6 +16,7 @@ export const GetVerifiedPage = () => {
   const navigate = useNavigate();
   const [description, setDescription] = useState<string>("");
   const [error, setError] = useState<string>("");
+  const [success, setSuccess] = useState<string>("");
   const [image, setImage] = useState<File | null>(null);
 
   const onChangeInput = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -65,18 +67,22 @@ export const GetVerifiedPage = () => {
       .post("http://localhost:4000/artist/create", formData)
       .then((res: AxiosResponse<WebResponse<Album>>) => {
         console.log(res);
-        setError("Album created");
+        setSuccess("Request is Formed");
       })
       .catch((err: unknown) => {
         const error = err as AxiosError<WebResponse<string>>;
         if (error.response == undefined) return;
         setError(error.response.data.message);
+        console.log(err);
       });
   };
+
+  console.log(user);
 
   return (
     <div className={"wrapper"}>
       {error && <ErrorModal error={error} setError={setError} />}
+      {success && <SuccessModal setSuccess={setSuccess} success={success} />}
       <Navbar />
       <div className="container">
         <div className={"loginBox"}>

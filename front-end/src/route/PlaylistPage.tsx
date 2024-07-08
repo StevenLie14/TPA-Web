@@ -48,8 +48,14 @@ export const PlaylistPage = () => {
 
   const deletePlaylist = () => {
     if (playlist == null) return;
+    if (user == null) return;
     void axios
-      .delete("http://localhost:4000/playlist?id=" + playlist.playlistId)
+      .delete(
+        "http://localhost:4000/playlist?id=" +
+          playlist.playlistId +
+          "&userId=" +
+          user.user_id,
+      )
       .then((res) => {
         console.log(res);
         updateSong();
@@ -80,8 +86,15 @@ export const PlaylistPage = () => {
               <h1>{playlist?.title}</h1>
               {playlist && <RichText description={playlist.description} />}
               <div className={"songDescription"}>
-                <img src={playlist?.user.avatar} alt={"avatar"} /> -{" "}
-                {playlist?.user.username} - {playlist?.playlistDetails.length}{" "}
+                <img
+                  src={
+                    playlist?.user.avatar
+                      ? playlist.user.avatar
+                      : "/assets/download (6).png"
+                  }
+                  alt={"avatar"}
+                />{" "}
+                - {playlist?.user.username} - {playlist?.playlistDetails.length}{" "}
                 songs - {Math.floor(duration / 60)} min{" "}
                 {Math.floor(duration % 60)
                   .toString()

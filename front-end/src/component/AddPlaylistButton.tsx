@@ -2,17 +2,21 @@ import axios from "axios";
 import { BadgeCheck, BadgePlus, Bookmark } from "lucide-react";
 import { useState } from "react";
 
+import { useAuth } from "../context/UseAuth.tsx";
 import { useSong } from "../context/UseSong.tsx";
 
 export const AddPlaylistButton = ({ song }: { song: Song }) => {
   const [isDrop, setIsDrop] = useState(false);
   const { playlist, updatePlaylist } = useSong();
+  const { user } = useAuth();
 
   const addToPlaylist = (play: Playlist) => {
+    if (user == null) return;
     axios
       .post("http://localhost:4000/playlist-detail", {
         playlistId: play.playlistId,
         songId: song.songId,
+        userId: user.user_id,
       })
       .then((res) => {
         console.log(res);
