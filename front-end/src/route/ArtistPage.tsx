@@ -38,10 +38,10 @@ export const ArtistPage = () => {
       setFilteredAlbum(album?.filter((album) => album.type === "Single"));
     } else if (type === "album") {
       setType("album");
-      setFilteredAlbum(album?.filter((album) => album.type === "Album"));
+      setFilteredAlbum(album?.filter((album) => album.type === "Albums"));
     } else if (type === "ep") {
       setType("ep");
-      setFilteredAlbum(album?.filter((album) => album.type === "EPs"));
+      setFilteredAlbum(album?.filter((album) => album.type === "Eps"));
     }
   };
 
@@ -51,9 +51,9 @@ export const ArtistPage = () => {
     } else if (typeFilter === "single") {
       setFilteredAlbum(album?.filter((album) => album.type === "Single"));
     } else if (typeFilter === "album") {
-      setFilteredAlbum(album?.filter((album) => album.type === "Album"));
+      setFilteredAlbum(album?.filter((album) => album.type === "Albums"));
     } else if (typeFilter === "ep") {
-      setFilteredAlbum(album?.filter((album) => album.type === "EPs"));
+      setFilteredAlbum(album?.filter((album) => album.type === "Eps"));
     }
   }, [typeFilter, album]);
 
@@ -61,13 +61,19 @@ export const ArtistPage = () => {
     if (user == null || id == null) return;
 
     axios
-      .get("http://localhost:4000/artist/get?id=" + id)
+      .get("http://localhost:4000/auth/artist/get?id=" + id, {
+        withCredentials: true,
+      })
       .then((res: AxiosResponse<WebResponse<Artist>>) => {
         const profile = res.data.data;
         setUserProfile(profile);
         axios
           .get(
-            "http://localhost:4000/song/get-by-artist?id=" + profile.artistId,
+            "http://localhost:4000/auth/song/get-by-artist?id=" +
+              profile.artistId,
+            {
+              withCredentials: true,
+            },
           )
           .then((res: AxiosResponse<WebResponse<Song[]>>) => {
             setSong(res.data.data);
@@ -78,7 +84,9 @@ export const ArtistPage = () => {
           });
 
         axios
-          .get("http://localhost:4000/playlist?id=" + user.user_id)
+          .get("http://localhost:4000/auth/playlist?id=" + user.user_id, {
+            withCredentials: true,
+          })
           .then((res: AxiosResponse<WebResponse<Playlist[]>>) => {
             const playlist = res.data.data.filter((playlist) =>
               playlist.playlistDetails.find(
@@ -92,7 +100,13 @@ export const ArtistPage = () => {
           });
 
         axios
-          .get("http://localhost:4000/album/get-artist?id=" + profile.artistId)
+          .get(
+            "http://localhost:4000/auth/album/get-artist?id=" +
+              profile.artistId,
+            {
+              withCredentials: true,
+            },
+          )
           .then((res: AxiosResponse<WebResponse<Album[]>>) => {
             setAlbum(res.data.data);
             console.log(res.data);
@@ -119,7 +133,7 @@ export const ArtistPage = () => {
       return;
     }
     clearAllQueue();
-    song.map((song) => {
+    song.slice(0,5).map((song) => {
       enqueue(song, user);
     });
   };

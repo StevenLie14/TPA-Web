@@ -24,7 +24,7 @@ export const SideSong = ({
     e.stopPropagation();
     if (waitingSong == null) {
       setSong(null);
-    } else if (songs == song) {
+    } else if (songs.songId == song?.songId) {
       dequeue(user);
     } else {
       removeQueue(index, user);

@@ -11,7 +11,9 @@ export const FollowButton = ({ userFollow }: { userFollow: User }) => {
   const GetButton = () => {
     if (user) {
       axios
-        .get("http://localhost:4000/get-following?id=" + user.user_id)
+        .get("http://localhost:4000/auth/get-following?id=" + user.user_id, {
+          withCredentials: true,
+        })
         .then((res: AxiosResponse<WebResponse<Follow[]>>) => {
           if (
             res.data.data.find(
@@ -34,16 +36,16 @@ export const FollowButton = ({ userFollow }: { userFollow: User }) => {
   }, [user]);
 
   const handleFollow = () => {
-    console.log(userFollow.user_id);
-    console.log(user?.user_id);
     if (user) {
+      if (user.user_id == userFollow.user_id) return;
       if (isFollowing) {
         axios
-          .delete("http://localhost:4000/follow", {
+          .delete("http://localhost:4000/auth/follow", {
             data: {
               followId: userFollow.user_id,
               followerId: user.user_id,
             },
+            withCredentials: true,
           })
           .then((res) => {
             console.log(res);
@@ -55,10 +57,16 @@ export const FollowButton = ({ userFollow }: { userFollow: User }) => {
           });
       } else {
         axios
-          .put("http://localhost:4000/follow", {
-            followId: userFollow.user_id,
-            followerId: user.user_id,
-          })
+          .put(
+            "http://localhost:4000/auth/follow",
+            {
+              followId: userFollow.user_id,
+              followerId: user.user_id,
+            },
+            {
+              withCredentials: true,
+            },
+          )
           .then((res) => {
             console.log(res);
             // setIsFollowing(true);
@@ -71,8 +79,12 @@ export const FollowButton = ({ userFollow }: { userFollow: User }) => {
     }
   };
   return (
-    <button className={"follow"} onClick={handleFollow}>
-      {isFollowing ? "Unfollow" : "Follow"}
-    </button>
+    <div>
+      {user && user.user_id != userFollow.user_id && (
+        <button className={"follow"} onClick={handleFollow}>
+          {isFollowing ? "Unfollow" : "Follow"}
+        </button>
+      )}
+    </div>
   );
 };

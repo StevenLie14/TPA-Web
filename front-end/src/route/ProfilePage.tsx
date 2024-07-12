@@ -30,7 +30,9 @@ export const ProfilePage = () => {
     if (user == null || id == undefined) return;
 
     axios
-      .get("http://localhost:4000/user/get?id=" + id)
+      .get("http://localhost:4000/auth/user/get?id=" + id, {
+        withCredentials: true,
+      })
       .then((res: AxiosResponse<WebResponse<User>>) => {
         setUserProfile(res.data.data);
         if (
@@ -46,7 +48,9 @@ export const ProfilePage = () => {
       });
 
     axios
-      .get("http://localhost:4000/playlist?id=" + id)
+      .get("http://localhost:4000/auth/playlist?id=" + id, {
+        withCredentials: true,
+      })
       .then((res: AxiosResponse<WebResponse<Playlist[]>>) => {
         setPlaylist(res.data.data);
         console.log(res.data.data);
@@ -56,7 +60,9 @@ export const ProfilePage = () => {
       });
 
     axios
-      .get("http://localhost:4000/get-following?id=" + id)
+      .get("http://localhost:4000/auth/get-following?id=" + id, {
+        withCredentials: true,
+      })
       .then((res: AxiosResponse<WebResponse<Follow[]>>) => {
         setFollowing(res.data.data);
         console.log("following");
@@ -67,7 +73,9 @@ export const ProfilePage = () => {
       });
 
     axios
-      .get("http://localhost:4000/get-follower?id=" + id)
+      .get("http://localhost:4000/auth/get-follower?id=" + id, {
+        withCredentials: true,
+      })
       .then((res: AxiosResponse<WebResponse<Follow[]>>) => {
         setFollower(res.data.data);
         console.log("following");
@@ -78,7 +86,9 @@ export const ProfilePage = () => {
       });
 
     axios
-      .get("http://localhost:4000/get-mutual?id=" + id)
+      .get("http://localhost:4000/auth/get-mutual?id=" + id, {
+        withCredentials: true,
+      })
       .then((res: AxiosResponse<WebResponse<Follow[]>>) => {
         setMutual(res.data.data);
         console.log("following");
@@ -105,7 +115,9 @@ export const ProfilePage = () => {
     formData.append("image", image as Blob);
     formData.append("userId", user.user_id);
     axios
-      .post("http://localhost:4000/user/update-pic", formData)
+      .post("http://localhost:4000/auth/user/update-pic", formData, {
+        withCredentials: true,
+      })
       .then((res: AxiosResponse<WebResponse<string>>) => {
         console.log(res);
         setSuccess("Profile Updated SuccessFully!");
@@ -165,6 +177,7 @@ export const ProfilePage = () => {
                 Followers - {following?.length} Following
               </h6>
             </div>
+            {/*<FollowButton userFollow={userProfile} />*/}
           </div>
           {id && playlist && playlist.length > 0 && (
             <div className="cardContainer">

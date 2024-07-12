@@ -31,12 +31,18 @@ export const EditProfilePage = () => {
   const onEdit = () => {
     if (user == null) return;
     void axios
-      .post("http://localhost:4000/user/edit-prof", {
-        userId: user.user_id,
-        country: editProps.country,
-        dob: new Date(editProps.dob),
-        gender: editProps.gender,
-      })
+      .post(
+        "http://localhost:4000/auth/user/edit-prof",
+        {
+          userId: user.user_id,
+          country: editProps.country,
+          dob: new Date(editProps.dob),
+          gender: editProps.gender,
+        },
+        {
+          withCredentials: true,
+        },
+      )
       .then((res) => {
         setSuccess("Profile Updated");
         console.log(res);

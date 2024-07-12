@@ -26,12 +26,15 @@ export const PlaylistTable = ({
     if (user == null) return;
     axios
       .delete(
-        "http://localhost:4000/playlist-detail?id=" +
+        "http://localhost:4000/auth/playlist-detail?id=" +
           detail.playlistDetailId +
           "&userId=" +
           user.user_id +
           "&detId=" +
           detail.playlistId,
+        {
+          withCredentials: true,
+        },
       )
       .then((res) => {
         console.log(res);

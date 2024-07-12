@@ -1,12 +1,13 @@
 // import {useEffect} from "react";
 import type { AxiosResponse } from "axios";
 import axios from "axios";
+import { useAtom } from "jotai";
 import { AudioLines, Play } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 import { AlbumCard } from "../component/AlbumCard.tsx";
-import { ControlMusic } from "../component/ControlMusic.tsx";
+import { ControlMusic, updateLast } from "../component/ControlMusic.tsx";
 import { Main } from "../component/Main.tsx";
 import { RightSideBar } from "../component/RightSideBar.tsx";
 import { SideBar } from "../component/SideBar.tsx";
@@ -17,11 +18,12 @@ import { useSong } from "../context/UseSong.tsx";
 export const HomePage = () => {
   const { user, authenticated } = useAuth();
   const navigate = useNavigate();
-  const { song, changeSong } = useSong();
+  const { song, clearAllQueue, enqueue } = useSong();
   const [gallery, setGallery] = useState<Play[]>();
+  const [albums, setAlbums] = useState<Album[]>();
   const [recommendation, setRecommendation] = useState<Album[]>();
   const [isLoad, setIsLoad] = useState<boolean>(false);
-
+  const [update, setUpdate] = useAtom(updateLast);
   useEffect(() => {
     if (authenticated == null) return;
     if (!authenticated) {
@@ -36,7 +38,9 @@ export const HomePage = () => {
       setIsLoad(true);
       setTimeout(() => {
         axios
-          .get("http://localhost:4000/album/get-random")
+          .get("http://localhost:4000/auth/album/get-random", {
+            withCredentials: true,
+          })
           .then((res: AxiosResponse<WebResponse<Album[]>>) => {
             setRecommendation((prev) => {
               if (prev == undefined) return res.data.data;
@@ -72,18 +76,38 @@ export const HomePage = () => {
 
   useEffect(() => {
     if (!user) return;
+    setAlbums(undefined);
     axios
-      .get("http://localhost:4000/play/get-last?id=" + user.user_id)
+      .get("http://localhost:4000/auth/play/get-last?id=" + user.user_id, {
+        withCredentials: true,
+      })
       .then((res: AxiosResponse<WebResponse<Play[]>>) => {
-        setGallery(res.data.data);
+        const gal = res.data.data;
+        setGallery(gal);
+        const id: string[] = [];
+        gal.map((g) => {
+          if (!id.includes(g.song.albumId)) {
+            id.push(g.song.albumId);
+            setAlbums((prev) => {
+              if (prev == undefined) return [g.song.album];
+              return [...prev, g.song.album];
+            });
+          }
+        });
+        setUpdate(false);
       })
       .catch((err: unknown) => {
         console.log(err);
       });
-  }, [user]);
+  }, [user, update]);
 
-  const handlePlayClick = (e: React.MouseEvent<HTMLSpanElement>) => {
+  const handlePlayClick = (
+    e: React.MouseEvent<HTMLSpanElement>,
+    song: Song,
+  ) => {
     e.stopPropagation();
+    clearAllQueue();
+    enqueue(song, user);
   };
 
   return (
@@ -108,11 +132,16 @@ export const HomePage = () => {
                   {play.song == song ? (
                     <AudioLines />
                   ) : (
-                    <div className={"play"} onClick={handlePlayClick}>
+                    <div
+                      className={"play"}
+                      onClick={(e) => {
+                        handlePlayClick(e, play.song);
+                      }}
+                    >
                       <Play
-                        onClick={() => {
-                          changeSong(play.song.songId);
-                        }}
+                      // onClick={() => {
+                      //   changeSong(play.song.songId);
+                      // }}
                       />
                     </div>
                   )}
@@ -131,14 +160,10 @@ export const HomePage = () => {
               )}
             </div>
             <div className="cardWrapper">
-              {gallery &&
-                gallery.length > 0 &&
-                gallery.map((play) => (
-                  <AlbumCard
-                    album={play.song.album}
-                    key={play.userId}
-                    play={false}
-                  />
+              {albums &&
+                albums.length > 0 &&
+                albums.map((album) => (
+                  <AlbumCard album={album} key={album.title} play={false} />
                 ))}
             </div>
           </div>

@@ -182,7 +182,7 @@ func (s SearchServiceImpl) Search(keyword string) ([]response.SearchResultRespon
 
 		var filteredSongs []model.Song
 		for _, song := range allSong {
-			if utils.GetDistance(keyword, song.Title) <= 10 {
+			if utils.GetDistance(keyword, song.Title) <= 20 {
 				filteredSongs = append(filteredSongs, song)
 			}
 		}

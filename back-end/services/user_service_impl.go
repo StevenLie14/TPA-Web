@@ -6,7 +6,6 @@ import (
 	"back-end/model"
 	"back-end/repository"
 	"back-end/utils"
-	"fmt"
 	"github.com/go-playground/validator/v10"
 	"golang.org/x/crypto/bcrypt"
 	"time"
@@ -72,7 +71,6 @@ func (u UserServiceImpl) Register(req request.UserRequest) (res response.Registe
 	linkUUID := utils.GenerateUUID()
 
 	if err != nil {
-		fmt.Println("disini?")
 		notificationSetting := model.NotificationSetting{
 			NotificationSettingId: utils.GenerateUUID(),
 			EmailFollower:         false,
@@ -186,6 +184,19 @@ func (u UserServiceImpl) LoginWithGoogle(req request.GoogleRequest) (res respons
 		}
 		user = user2
 	} else {
+		notificationSetting := model.NotificationSetting{
+			NotificationSettingId: utils.GenerateUUID(),
+			EmailFollower:         false,
+			EmailAlbum:            false,
+			WebFollower:           false,
+			WebAlbum:              false,
+		}
+
+		err = u.NotificationSettingRepository.Create(notificationSetting)
+		if err != nil {
+			return response.AuthResponse{}, err
+		}
+		user.NotificationSettingId = notificationSetting.NotificationSettingId
 		err = u.UserRepository.Save(user)
 		if err != nil {
 			return response.AuthResponse{}, err

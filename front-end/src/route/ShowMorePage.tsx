@@ -34,7 +34,9 @@ export const ShowMorePage = () => {
     console.log(subtype);
     if (subtype == "browse") {
       axios
-        .get("http://localhost:4000/song/get-all")
+        .get("http://localhost:4000/auth/song/get-all", {
+          withCredentials: true,
+        })
         .then((res: AxiosResponse<WebResponse<Song[]>>) => {
           setSongs(res.data.data);
           console.log(res);
@@ -49,7 +51,9 @@ export const ShowMorePage = () => {
         setIsLoad(true);
         setTimeout(() => {
           axios
-            .get("http://localhost:4000/album/get-random")
+            .get("http://localhost:4000/auth/album/get-random", {
+              withCredentials: true,
+            })
             .then((res: AxiosResponse<WebResponse<Album[]>>) => {
               setRecommendation((prev) => {
                 if (prev == undefined) return res.data.data;
@@ -66,7 +70,9 @@ export const ShowMorePage = () => {
     }
     if (subtype == "recently") {
       axios
-        .get("http://localhost:4000/play/get-last-rec?id=" + id)
+        .get("http://localhost:4000/auth/play/get-last-rec?id=" + id, {
+          withCredentials: true,
+        })
         .then((res: AxiosResponse<WebResponse<Play[]>>) => {
           setGallery(res.data.data);
         })
@@ -77,7 +83,9 @@ export const ShowMorePage = () => {
 
     if (subtype == "public") {
       axios
-        .get("http://localhost:4000/playlist?id=" + id)
+        .get("http://localhost:4000/auth/playlist?id=" + id, {
+          withCredentials: true,
+        })
         .then((res: AxiosResponse<WebResponse<Playlist[]>>) => {
           setPlaylist(res.data.data);
         })
@@ -88,7 +96,9 @@ export const ShowMorePage = () => {
 
     if (subtype == "following") {
       axios
-        .get("http://localhost:4000/get-following?id=" + id)
+        .get("http://localhost:4000/auth/get-following?id=" + id, {
+          withCredentials: true,
+        })
         .then((res: AxiosResponse<WebResponse<Follow[]>>) => {
           setFollowing(res.data.data);
         })
@@ -99,7 +109,9 @@ export const ShowMorePage = () => {
 
     if (subtype == "follower") {
       axios
-        .get("http://localhost:4000/get-follower?id=" + id)
+        .get("http://localhost:4000/auth/get-follower?id=" + id, {
+          withCredentials: true,
+        })
         .then((res: AxiosResponse<WebResponse<Follow[]>>) => {
           setFollower(res.data.data);
         })
@@ -110,7 +122,9 @@ export const ShowMorePage = () => {
 
     if (subtype == "mutual") {
       axios
-        .get("http://localhost:4000/get-mutual?id=" + id)
+        .get("http://localhost:4000/auth/get-mutual?id=" + id, {
+          withCredentials: true,
+        })
         .then((res: AxiosResponse<WebResponse<Follow[]>>) => {
           setMutual(res.data.data);
         })

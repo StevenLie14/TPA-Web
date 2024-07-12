@@ -19,7 +19,9 @@ export const SideBar = () => {
     if (user == null) return;
 
     axios
-      .get("http://localhost:4000/get-following?id=" + user.user_id)
+      .get("http://localhost:4000/auth/get-following?id=" + user.user_id,{
+        withCredentials: true
+      })
       .then((res: AxiosResponse<WebResponse<Follow[]>>) => {
         setFollowing(res.data.data);
         console.log("following");
@@ -41,7 +43,7 @@ export const SideBar = () => {
               style={{ display: "flex", alignItems: "center" }}
             >
               <House />
-              Home
+              <p>Home</p>
             </Link>
           </li>
           <li>
@@ -51,7 +53,7 @@ export const SideBar = () => {
               style={{ display: "flex", alignItems: "center" }}
             >
               <Search />
-              Search
+              <p>Search</p>
             </Link>
           </li>
           {user && user.role == "Artist" && (
@@ -62,7 +64,7 @@ export const SideBar = () => {
                 style={{ display: "flex", alignItems: "center" }}
               >
                 <Music4 />
-                Your Post
+                <p>Your Post</p>
               </Link>
             </li>
           )}
@@ -78,7 +80,7 @@ export const SideBar = () => {
                 style={{ display: "flex", alignItems: "center" }}
               >
                 <LibraryBig />
-                Your Library
+                <p>Your Library</p>
               </Link>
             </div>
             <div className={"rightLib"}>

@@ -15,6 +15,10 @@ func NewPlayRepositoryImpl(DB *gorm.DB, rdb *database.Redis) *PlayRepositoryImpl
 	return &PlayRepositoryImpl{DB: DB, rdb: rdb}
 }
 
+func (p PlayRepositoryImpl) Create(play model.Play) error {
+	return p.DB.Create(&play).Error
+}
+
 func (p PlayRepositoryImpl) Get8LastPlayedSongByUser(userId string) (res []model.Play, err error) {
 	subquery := p.DB.
 		Table("plays").

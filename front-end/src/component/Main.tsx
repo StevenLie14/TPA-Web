@@ -6,14 +6,16 @@ export const Main = ({
   children,
   setSearch,
   search,
+  setIsLoad,
 }: {
   children: ReactNode;
   setSearch: Dispatch<SetStateAction<string>> | null;
   search?: string;
+  setIsLoad?: Dispatch<SetStateAction<boolean>>;
 }) => {
   return (
     <main id={"main"}>
-      <Header setSearch={setSearch} search={search} />
+      <Header setSearch={setSearch} search={search} setIsLoad={setIsLoad} />
 
       <div className={"content"} id={"content"}>
         {children}

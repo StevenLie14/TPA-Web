@@ -16,7 +16,13 @@ export const ArtistVerificationPage = () => {
 
   const onVerify = (artistId: string) => {
     axios
-      .put("http://localhost:4000/artist/update?id=" + artistId)
+      .put(
+        "http://localhost:4000/admin/artist/update?id=" + artistId,
+        {},
+        {
+          withCredentials: true,
+        },
+      )
       .then((res) => {
         getUnverified();
         console.log(res);
@@ -26,14 +32,17 @@ export const ArtistVerificationPage = () => {
       });
   };
 
-  const onCancel = (artistId: string) => {
+  const onCancel = (artistId: string, userId: string) => {
     if (user == null) return;
     axios
       .delete(
-        "http://localhost:4000/artist/delete?id=" +
+        "http://localhost:4000/admin/artist/delete?id=" +
           artistId +
           "&userId=" +
-          user.user_id,
+          userId,
+        {
+          withCredentials: true,
+        },
       )
       .then((res) => {
         getUnverified();
@@ -51,7 +60,9 @@ export const ArtistVerificationPage = () => {
     if (user.role != "Admin") navigate("/home");
 
     axios
-      .get("http://localhost:4000/artist/get-unverified")
+      .get("http://localhost:4000/auth/artist/get-unverified", {
+        withCredentials: true,
+      })
       .then((res: AxiosResponse<WebResponse<Artist[] | null>>) => {
         const artist = res.data.data;
         if (artist == null) {
@@ -61,7 +72,9 @@ export const ArtistVerificationPage = () => {
         const verifyArtist: VerifyArtist[] = [];
         artist.map((art) => {
           axios
-            .get("http://localhost:4000/get-following?id=" + art.userId)
+            .get("http://localhost:4000/auth/get-following?id=" + art.userId, {
+              withCredentials: true,
+            })
             .then((res: AxiosResponse<WebResponse<Follow[]>>) => {
               console.log(res.data.data);
             })
@@ -70,7 +83,9 @@ export const ArtistVerificationPage = () => {
             });
 
           axios
-            .get("http://localhost:4000/get-follower?id=" + art.userId)
+            .get("http://localhost:4000/get-follower?id=" + art.userId, {
+              withCredentials: true,
+            })
             .then((res: AxiosResponse<WebResponse<Follow[]>>) => {
               console.log(res.data.data);
             })
@@ -146,7 +161,7 @@ export const ArtistVerificationPage = () => {
                     </div>
                     <div
                       onClick={() => {
-                        onCancel(art.artist.artistId);
+                        onCancel(art.artist.artistId, art.artist.userId);
                       }}
                     >
                       <X className={"x"} />

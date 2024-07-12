@@ -77,8 +77,9 @@ function App() {
                     path={"/playlist/create"}
                     element={<CreatePlaylistPage />}
                   />
-                  <Route path="/" element={<NotFoundPage />} />
                   {/*<Route path="/chat" element={<ChatPage/>} />*/}
+                  <Route path="/404" element={<NotFoundPage />} />
+                  <Route path="*" element={<HomePage />} />
                 </Routes>
               </Provider>
             </SongProvider>

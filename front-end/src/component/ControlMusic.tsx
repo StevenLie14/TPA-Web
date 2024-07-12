@@ -1,3 +1,5 @@
+import axios from "axios";
+import { atom, useAtom } from "jotai";
 import {
   MonitorPlay,
   Pause,
@@ -15,6 +17,8 @@ import { useEffect, useState } from "react";
 import { useAuth } from "../context/UseAuth.tsx";
 import { useSong } from "../context/UseSong.tsx";
 
+export const updateLast = atom<boolean>(false);
+
 export const ControlMusic = () => {
   const {
     song,
@@ -29,6 +33,7 @@ export const ControlMusic = () => {
     closeAdvertise,
   } = useSong();
   const { user } = useAuth();
+  const [update, setUpdate] = useAtom(updateLast);
 
   const [volume, setVolume] = useState(() => {
     const savedVolume = localStorage.getItem("volume");
@@ -56,6 +61,13 @@ export const ControlMusic = () => {
         songAudio.currentTime = parseFloat(savedDuration);
         setCurrentTime(songAudio.currentTime);
       }
+
+      // const test = document.getElementById("audioPlayer");
+      // if (test != null) {
+      //   setDuration(test.duration);
+      // }
+      // console.log(test.duration);
+      // setDuration(test.duration);
     };
 
     const updateCurrentTime = () => {
@@ -63,7 +75,11 @@ export const ControlMusic = () => {
       if (!songAudio) return;
       setCurrentTime(songAudio.currentTime);
       localStorage.setItem("duration", songAudio.currentTime.toString());
+      // if (songAudio.currentTime >= duration && duration !== 0) {
+      //   handleEnded();
+      // }
     };
+
     const handleEnded = () => {
       console.log("ended");
       // setCurrentTime(0);
@@ -71,6 +87,27 @@ export const ControlMusic = () => {
       if (advertise != null) {
         closeAdvertise();
         resetAdv();
+      }
+      if (song != null && user != null) {
+        axios
+          .post(
+            "http://localhost:4000/auth/play/create",
+            {
+              songId: song.songId,
+              userId: user.user_id,
+            },
+            {
+              withCredentials: true,
+            },
+          )
+          .then(() => {
+            console.log("success");
+            setUpdate(true);
+            console.log(update);
+          })
+          .catch((err: unknown) => {
+            console.log(err);
+          });
       }
       dequeue(user);
     };
@@ -172,25 +209,38 @@ export const ControlMusic = () => {
           <input
             type="range"
             min="0"
-            max={song?.duration ?? 0}
+            max={
+              audioRef.current
+                ? audioRef.current.duration
+                : song
+                  ? song.duration
+                  : 999
+            }
             onChange={handleDurationChange}
             value={currentTime}
             className="slider"
             id="durationSlider"
           />
           <p>
-            {song
-              ? Math.floor(song.duration / 60)
+            {audioRef.current?.duration
+              ? Math.floor(audioRef.current.duration / 60)
                   .toString()
                   .padStart(2, "0")
               : "00"}
             :
-            {song
-              ? Math.floor(song.duration % 60)
+            {audioRef.current?.duration
+              ? Math.floor(audioRef.current.duration % 60)
                   .toString()
                   .padStart(2, "0")
               : "00"}
           </p>
+          {/*<audio*/}
+          {/*  ref={audioRef}*/}
+          {/*  preload={"metadata"}*/}
+          {/*  src={`http://localhost:4000/test?id=${song?.songId}`}*/}
+          {/*  controls={true}*/}
+          {/*  id={"audioPlayer"}*/}
+          {/*/>*/}
         </div>
       </div>
       <div className="volumeControl">

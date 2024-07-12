@@ -92,7 +92,11 @@ export const SearchPage = () => {
     setTimeout(() => {
       axios
         .get(
-          "http://localhost:4000/search/get?keyword=" + debounce.toUpperCase(),
+          "http://localhost:4000/auth/search/get?keyword=" +
+            debounce.toUpperCase(),
+          {
+            withCredentials: true,
+          },
         )
         .then((res: AxiosResponse<WebResponse<SearchResponse[]>>) => {
           setTopResult(res.data.data);
@@ -143,7 +147,7 @@ export const SearchPage = () => {
     <div className="outer">
       <div className="App">
         <SideBar />
-        <Main setSearch={setSearch} search={search}>
+        <Main setSearch={setSearch} search={search} setIsLoad={setIsLoad}>
           {debounce === "" ? (
             <div>
               <div className="cardContainer">

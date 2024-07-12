@@ -3,6 +3,7 @@ package controller
 import (
 	"back-end/data/response"
 	"back-end/services"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"io"
 	"net/http"
@@ -58,29 +59,44 @@ func (a AdvertisementController) StreamAdv(c *gin.Context) {
 
 	file, err := os.Open(adv.Link)
 	if err != nil {
-		panic(err)
+		c.String(http.StatusInternalServerError, "Error opening file")
+		return
 	}
-	defer func(file *os.File) {
-		err := file.Close()
+	defer file.Close()
+	fileInfo, err := file.Stat()
+	if err != nil {
+		c.String(http.StatusInternalServerError, "Error getting file info")
+		return
+	}
+	fileSize := fileInfo.Size()
+	// Assume 128 kbps bitrate, 10 seconds of audio
+	chunkSize := int64(128 * 1024 * 10 / 8)
+	rangeHeader := c.GetHeader("Range")
+	var start, end int64
+	if rangeHeader != "" {
+		_, err := fmt.Sscanf(rangeHeader, "bytes=%d-", &start)
 		if err != nil {
-
+			c.String(http.StatusBadRequest, "Invalid range header")
+			return
 		}
-	}(file)
-
+	}
+	end = start + chunkSize
+	if end > fileSize {
+		end = fileSize
+	}
 	c.Header("Content-Type", "audio/mpeg")
-	c.Header("Transfer-Encoding", "chunked")
-
-	buffer := make([]byte, 1024*1024)
-	for {
-		bytesRead, err := file.Read(buffer)
-		if err != nil && err != io.EOF {
-			panic(err)
-		}
-		if bytesRead == 0 {
-			break
-		}
-
-		c.Writer.Write(buffer[:bytesRead])
-		c.Writer.Flush()
+	c.Header("Accept-Ranges", "bytes")
+	c.Header("Content-Length", fmt.Sprintf("%d", end-start))
+	c.Header("Content-Range", fmt.Sprintf("bytes %d-%d/%d", start, end-1, fileSize))
+	c.Status(http.StatusPartialContent)
+	_, err = file.Seek(start, 0)
+	if err != nil {
+		c.String(http.StatusInternalServerError, "Error seeking file")
+		return
+	}
+	_, err = io.CopyN(c.Writer, file, end-start)
+	if err != nil {
+		c.String(http.StatusInternalServerError, "Error copying file")
+		return
 	}
 }

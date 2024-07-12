@@ -22,14 +22,20 @@ export const NotificationPage = () => {
     if (notificationSetting == null) return;
     console.log(notificationSetting.notificationSettingId);
     axios
-      .post("http://localhost:4000/setting/update", {
-        userId: user.user_id,
-        notificationSettingId: notificationSetting.notificationSettingId,
-        emailFollower: notificationSetting.emailFollower,
-        emailAlbum: notificationSetting.emailAlbum,
-        webFollower: notificationSetting.webFollower,
-        webAlbum: notificationSetting.webAlbum,
-      })
+      .post(
+        "http://localhost:4000/auth/setting/update",
+        {
+          userId: user.user_id,
+          notificationSettingId: notificationSetting.notificationSettingId,
+          emailFollower: notificationSetting.emailFollower,
+          emailAlbum: notificationSetting.emailAlbum,
+          webFollower: notificationSetting.webFollower,
+          webAlbum: notificationSetting.webAlbum,
+        },
+        {
+          withCredentials: true,
+        },
+      )
       .then((res) => {
         console.log(res);
         setSuccess("Notification setting updated");

@@ -1,9 +1,13 @@
 import { useGoogleLogin } from "@react-oauth/google";
 import type { AxiosResponse } from "axios";
-import axios from "axios";
+import axios,{ type AxiosError } from "axios";
+import { useAtom } from "jotai";
+import { atomWithStorage } from "jotai/utils";
 import type { Dispatch, ReactNode, SetStateAction } from "react";
 import { createContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+
+const users = atomWithStorage<User | null>("user", null);
 
 interface IProps {
   user: User | null;
@@ -22,7 +26,7 @@ interface IProps {
 export const AuthContext = createContext<IProps>({} as IProps);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useAtom(users);
   const [error, setError] = useState<string>("");
   const navigate = useNavigate();
   const [authenticated, setAuthenticated] = useState<boolean | null>(null);
@@ -35,7 +39,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const getUser = () => {
     axios
-      .get("http://localhost:4000/user/current-user", {
+      .get("http://localhost:4000/auth/user/current-user", {
         withCredentials: true,
       })
       .then((res: AxiosResponse<WebResponse<User>>) => {
@@ -43,7 +47,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setAuthenticated(true);
         const userId = res.data.data.user_id;
         const eventSource = new EventSource(
-          "http://localhost:4000/sse/notification-stream?id=" + userId,
+          "http://localhost:4000/auth/sse/notification-stream?id=" + userId,
           { withCredentials: true },
         );
 
@@ -56,7 +60,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           function (event: MessageEvent<string>) {
             // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             const data: Notification = JSON.parse(event.data);
-            console.log("Received notif-updated message:", data.body);
             new Notification(data.title, {
               body: data.body,
             });
@@ -71,7 +74,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           console.error("EventSource error:", error);
           eventSource.close();
           setTimeout(() => {
-            console.log("Attempting to reconnect...");
             getUser();
           }, 5000);
         };
@@ -136,8 +138,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         console.log(response.data);
         setSuccess("User registered successfully! Please Check your Email");
       })
-      .catch((error: unknown) => {
-        console.error("There was an error registering the user!", error);
+      .catch((err: unknown) => {
+        const error = err as AxiosError<WebResponse<string>>;
+        if (error.response == undefined) return;
+        setError(error.response.data.message);
+        console.error("There was an error registering the user!", err);
       });
   };
 
@@ -168,7 +173,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const logout = () => {
     if (user == null) return;
     void axios
-      .get("http://localhost:4000/user/logout?id=" + user.user_id, {
+      .get("http://localhost:4000/auth/user/logout?id=" + user.user_id, {
         withCredentials: true,
       })
       .then(() => {

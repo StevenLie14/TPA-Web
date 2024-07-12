@@ -1,15 +1,24 @@
-import { ChevronLeft, ChevronRight, Search } from "lucide-react";
+import type { AxiosResponse } from "axios";
+import axios from "axios";
+import { ChevronLeft, ChevronRight, MicVocal, Search } from "lucide-react";
 import type { ChangeEvent, Dispatch, SetStateAction } from "react";
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 import { useAuth } from "../context/UseAuth.tsx";
+import { ErrorModal } from "./ErrorModal.tsx";
+
+interface IProps {
+  result: string;
+}
 
 export const Header = ({
   setSearch,
+  setIsLoad,
   search,
 }: {
   setSearch: Dispatch<SetStateAction<string>> | null;
+  setIsLoad?: Dispatch<SetStateAction<boolean>>;
   search?: string;
 }) => {
   const [isDrop, setIsDrop] = useState(false);
@@ -43,12 +52,50 @@ export const Header = ({
 
   const handleSearch = (e: ChangeEvent<HTMLInputElement>) => {
     if (setSearch === null) return;
-    console.log("??");
     setSearch(e.target.value);
+  };
+
+  const [error, setError] = useState<string>("");
+  const navigate = useNavigate();
+
+  const handleSubmit = (e: ChangeEvent<HTMLInputElement>) => {
+    const music = e.target.files?.[0];
+    if (music === undefined) {
+      setError("Please select a file");
+      return;
+    }
+
+    if (!music.type.includes("audio")) {
+      setError("Please select a mp3 file");
+      return;
+    }
+    if (setIsLoad === undefined) return;
+    setIsLoad(true);
+    const dataForm = new FormData();
+    dataForm.append("files", music);
+    axios
+      .post(`http://127.0.0.1:5000/getresult`, dataForm, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          "Access-Control-Allow-Origin": "*",
+        },
+      })
+      .then((res: AxiosResponse<IProps>) => {
+        if (setSearch === null) return;
+        // console.log(res.data.result);
+        setSearch(res.data.result);
+        navigate("/search?query=" + res.data.result);
+      })
+      .catch((err: unknown) => {
+        console.log(err);
+        setError(err as string);
+        setIsLoad(false);
+      });
   };
 
   return (
     <header>
+      {error && <ErrorModal error={error} setError={setError} />}
       <div className={"left"}>
         <ChevronLeft
           className={history > 2 ? "disabled" : ""}
@@ -75,8 +122,22 @@ export const Header = ({
             <Search />
           </div>
         )}
+        {setIsLoad && (
+          <div>
+            <div>
+              <label htmlFor={"file"}>
+                <MicVocal />
+              </label>
+              <input
+                type="file"
+                id={"file"}
+                onChange={handleSubmit}
+                style={{ opacity: 0 }}
+              />
+            </div>
+          </div>
+        )}
       </div>
-
       <div className={"right"}>
         <div className="dropdown">
           <img

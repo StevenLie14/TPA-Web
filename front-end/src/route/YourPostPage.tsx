@@ -21,12 +21,20 @@ export const YourPostPage = () => {
     if (user.role != "Artist") navigate("/home");
 
     axios
-      .get("http://localhost:4000/artist/get?id=" + user.user_id)
+      .get("http://localhost:4000/auth/artist/get?id=" + user.user_id, {
+        withCredentials: true,
+      })
       .then((res: AxiosResponse<WebResponse<Artist>>) => {
         const artists = res.data.data;
         setArtist(artists);
         axios
-          .get("http://localhost:4000/album/get-artist?id=" + artists.artistId)
+          .get(
+            "http://localhost:4000/auth/album/get-artist?id=" +
+              artists.artistId,
+            {
+              withCredentials: true,
+            },
+          )
           .then((res: AxiosResponse<WebResponse<Album[]>>) => {
             setAlbum(res.data.data);
             console.log(res.data);
@@ -74,7 +82,7 @@ export const YourPostPage = () => {
                 <div className={"cardContent"}></div>
               </div>
               {albums?.map((album) => (
-                <AlbumCard album={album} key={album.albumId} />
+                <AlbumCard album={album} key={album.albumId} play={false} />
               ))}
             </div>
           </div>

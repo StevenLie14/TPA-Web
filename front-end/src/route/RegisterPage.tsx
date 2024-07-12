@@ -9,7 +9,8 @@ import { SuccessModal } from "../component/SuccessModal.tsx";
 import { useAuth } from "../context/UseAuth.tsx";
 
 export const RegisterPage = () => {
-  const { register, googleLogin, success, setSuccess } = useAuth();
+  const { register, googleLogin, success, setSuccess, error, setError } =
+    useAuth();
   // const {theme,setTheme} = useTheme()
   const [registerLogin, setRegisterLogin] = useState<RegisterProps>({
     username: "",
@@ -17,7 +18,7 @@ export const RegisterPage = () => {
     password: "",
     confirmPassword: "",
   } as RegisterProps);
-  const [error, setError] = useState<string>("");
+  const [err, setErr] = useState<string>("");
   const onRegister = () => {
     if (
       registerLogin.username == "" ||
@@ -68,6 +69,7 @@ export const RegisterPage = () => {
   return (
     <div className={"wrapper"}>
       {error && <ErrorModal error={error} setError={setError} />}
+      {err && <ErrorModal error={err} setError={setErr} />}
       {success && <SuccessModal success={success} setSuccess={setSuccess} />}
       <Navbar />
       <div className="container">

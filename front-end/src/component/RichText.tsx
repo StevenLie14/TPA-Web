@@ -8,7 +8,9 @@ export const RichText = ({ description }: { description: string }) => {
   const navigate = useNavigate();
   useEffect(() => {
     axios
-      .get("http://localhost:4000/user/get-all")
+      .get("http://localhost:4000/auth/user/get-all", {
+        withCredentials: true,
+      })
       .then((res: AxiosResponse<WebResponse<User[]>>) => {
         setUsers(res.data.data);
       })

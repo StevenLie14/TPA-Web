@@ -29,13 +29,21 @@ export const TrackPage = () => {
     if (id == null) return;
 
     axios
-      .get("http://localhost:4000/song/get?id=" + id)
+      .get("http://localhost:4000/auth/song/get?id=" + id, {
+        withCredentials: true,
+      })
       .then((res: AxiosResponse<WebResponse<Song>>) => {
         const songs = res.data.data;
         setSong(res.data.data);
         console.log(songs);
         axios
-          .get("http://localhost:4000/song/get-by-artist?id=" + songs.artistId)
+          .get(
+            "http://localhost:4000/auth/song/get-by-artist?id=" +
+              songs.artistId,
+            {
+              withCredentials: true,
+            },
+          )
           .then((res: AxiosResponse<WebResponse<Song[]>>) => {
             setTopTrack(res.data.data);
           })
@@ -43,7 +51,12 @@ export const TrackPage = () => {
             console.log(err);
           });
         axios
-          .get("http://localhost:4000/song/get-by-album?id=" + songs.albumId)
+          .get(
+            "http://localhost:4000/auth/song/get-by-album?id=" + songs.albumId,
+            {
+              withCredentials: true,
+            },
+          )
           .then((res: AxiosResponse<WebResponse<Song[]>>) => {
             // console.log(res)
             setAlbumSong(res.data.data);

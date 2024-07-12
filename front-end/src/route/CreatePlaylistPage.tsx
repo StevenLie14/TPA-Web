@@ -8,6 +8,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { ErrorModal } from "../component/ErrorModal.tsx";
 import { Footer } from "../component/Footer.tsx";
 import { Navbar } from "../component/Navbar.tsx";
+import { RichText } from "../component/RichText.tsx";
 import { SuccessModal } from "../component/SuccessModal.tsx";
 import { useAuth } from "../context/UseAuth.tsx";
 import { useSong } from "../context/UseSong.tsx";
@@ -66,7 +67,9 @@ export const CreatePlaylistPage = () => {
     formData.append("userId", user.user_id);
 
     axios
-      .post("http://localhost:4000/playlist/create", formData)
+      .post("http://localhost:4000/auth/playlist/create", formData, {
+        withCredentials: true,
+      })
       .then((res: AxiosResponse<WebResponse<Album>>) => {
         console.log(res);
         updatePlaylist();
@@ -143,7 +146,18 @@ export const CreatePlaylistPage = () => {
               </div>
               <div className={"areaAbout"}>
                 <label htmlFor="about">Playlist Description</label>
-                <textarea id="about" name="about" onChange={onChangeDesc} />
+                <textarea
+                  id="about"
+                  name="about"
+                  onChange={onChangeDesc}
+                  style={{
+                    border: "1px solid #ccc",
+                    padding: "10px",
+                    minHeight: "100px",
+                    overflow: "auto",
+                  }}
+                />
+                <RichText description={description} />
               </div>
               <div className={"saveButton"}>
                 <Link to={"/home"}>Cancel</Link>

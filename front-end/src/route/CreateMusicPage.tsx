@@ -136,7 +136,9 @@ export const CreateMusicPage = () => {
     const errs = [];
 
     axios
-      .get("http://localhost:4000/artist/get?id=" + user.user_id)
+      .get("http://localhost:4000/auth/artist/get?id=" + user.user_id, {
+        withCredentials: true,
+      })
       .then((res: AxiosResponse<WebResponse<Artist>>) => {
         const artist = res.data.data;
         const formData = new FormData();
@@ -145,7 +147,9 @@ export const CreateMusicPage = () => {
         formData.append("type", type);
         formData.append("artistId", artist.artistId);
         axios
-          .post("http://localhost:4000/album/create", formData)
+          .post("http://localhost:4000/artist/album/create", formData, {
+            withCredentials: true,
+          })
           .then((res: AxiosResponse<WebResponse<Album>>) => {
             console.log(res);
             const albumId = res.data.data.albumId;
@@ -161,7 +165,9 @@ export const CreateMusicPage = () => {
                 Math.floor(track.duration).toString(),
               );
               axios
-                .post("http://localhost:4000/song/create", trackData)
+                .post("http://localhost:4000/artist/song/create", trackData, {
+                  withCredentials: true,
+                })
                 .then((res) => {
                   console.log(res);
                   setSuccess("Success Created Album");

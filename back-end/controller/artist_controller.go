@@ -5,7 +5,6 @@ import (
 	"back-end/data/response"
 	"back-end/services"
 	"back-end/utils"
-	"errors"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"net/http"
@@ -90,31 +89,31 @@ func (controller *ArtistController) CreateArtist(ctx *gin.Context) {
 	description := ctx.PostForm("description")
 	userId := ctx.PostForm("userId")
 
-	_, err = controller.ArtistService.GetArtistByUserId(userId)
-	if err == nil {
-		webResponse := response.WebResponse{
-			Code:    http.StatusBadRequest,
-			Message: errors.New("verification is requested").Error(),
-			Data:    nil,
-		}
+	//_, err = controller.ArtistService.GetArtistByUserId(userId)
+	//if err == nil {
+	//	webResponse := response.WebResponse{
+	//		Code:    http.StatusBadRequest,
+	//		Message: errors.New("verification is requested").Error(),
+	//		Data:    nil,
+	//	}
+	//
+	//	ctx.Header("Content-Type", "application/json")
+	//	ctx.JSON(http.StatusBadRequest, webResponse)
+	//	return
+	//}
 
-		ctx.Header("Content-Type", "application/json")
-		ctx.JSON(http.StatusBadRequest, webResponse)
-		return
-	}
-
-	_, err = controller.ArtistService.GetUnverifiedArtistByArtistId(userId)
-	if err == nil {
-		webResponse := response.WebResponse{
-			Code:    http.StatusBadRequest,
-			Message: errors.New("you are verified").Error(),
-			Data:    nil,
-		}
-
-		ctx.Header("Content-Type", "application/json")
-		ctx.JSON(http.StatusBadRequest, webResponse)
-		return
-	}
+	//_, err = controller.ArtistService.GetUnverifiedArtistByArtistId(userId)
+	//if err == nil {
+	//	webResponse := response.WebResponse{
+	//		Code:    http.StatusBadRequest,
+	//		Message: errors.New("you are verified").Error(),
+	//		Data:    nil,
+	//	}
+	//
+	//	ctx.Header("Content-Type", "application/json")
+	//	ctx.JSON(http.StatusBadRequest, webResponse)
+	//	return
+	//}
 
 	filename := strings.Replace(utils.GenerateUUID(), "-", "", -1)
 	fileExt := strings.Split(file.Filename, ".")[1]
@@ -213,6 +212,7 @@ func (controller *ArtistController) GetUnverifiedArtist(ctx *gin.Context) {
 func (controller *ArtistController) DeleteArtist(ctx *gin.Context) {
 	artistId := ctx.Query("id")
 	userId := ctx.Query("userId")
+	fmt.Println(userId)
 
 	err := controller.ArtistService.DeleteArtist(userId, artistId)
 	if err != nil {

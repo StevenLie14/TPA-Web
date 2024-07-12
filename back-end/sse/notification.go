@@ -97,7 +97,6 @@ func (n NotificationSSE) StreamNotification(ctx *gin.Context) {
 				f.Flush()
 			} else {
 				fmt.Println("Not Flush")
-
 			}
 
 			if ctx.Writer.Status() != http.StatusOK {

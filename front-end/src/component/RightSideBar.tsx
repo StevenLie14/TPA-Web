@@ -50,7 +50,7 @@ export const RightSideBar = () => {
                 <div className="aboutContent">
                   <h3>{song?.artist.user.username}</h3>
                   <div className="description">
-                    <p>2127833218 monthly listeners</p>
+                    <p>{song?.play?.length} monthly listeners</p>
                     {song && <FollowButton userFollow={song.artist.user} />}
                   </div>
                   <p>{song?.artist.description}</p>

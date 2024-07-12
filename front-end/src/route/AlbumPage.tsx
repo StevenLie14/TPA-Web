@@ -29,7 +29,9 @@ export const AlbumPage = () => {
   useEffect(() => {
     if (id == null) return;
     axios
-      .get("http://localhost:4000/song/get-by-album?id=" + id)
+      .get("http://localhost:4000/auth/song/get-by-album?id=" + id, {
+        withCredentials: true,
+      })
       .then((res: AxiosResponse<WebResponse<Song[]>>) => {
         setAlbumSong(res.data.data);
         console.log(res.data.data);
@@ -46,7 +48,12 @@ export const AlbumPage = () => {
         setDuration(minute);
 
         axios
-          .get("http://localhost:4000/album/get-artist?id=" + albums.artistId)
+          .get(
+            "http://localhost:4000/auth/album/get-artist?id=" + albums.artistId,
+            {
+              withCredentials: true,
+            },
+          )
           .then((res: AxiosResponse<WebResponse<Album[]>>) => {
             setMoreAlbum(res.data.data);
           })

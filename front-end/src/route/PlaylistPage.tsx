@@ -28,7 +28,9 @@ export const PlaylistPage = () => {
   const updateSong = () => {
     if (id == null) return;
     axios
-      .get("http://localhost:4000/playlist-id?id=" + id)
+      .get("http://localhost:4000/auth/playlist-id?id=" + id, {
+        withCredentials: true,
+      })
       .then((res: AxiosResponse<WebResponse<Playlist>>) => {
         const playlist = res.data.data;
         console.log(res.data.data);
@@ -51,10 +53,13 @@ export const PlaylistPage = () => {
     if (user == null) return;
     void axios
       .delete(
-        "http://localhost:4000/playlist?id=" +
+        "http://localhost:4000/auth/playlist?id=" +
           playlist.playlistId +
           "&userId=" +
           user.user_id,
+        {
+          withCredentials: true,
+        },
       )
       .then((res) => {
         console.log(res);

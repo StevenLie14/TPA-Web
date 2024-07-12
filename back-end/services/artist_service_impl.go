@@ -6,6 +6,8 @@ import (
 	"back-end/model"
 	"back-end/repository"
 	"back-end/utils"
+	"errors"
+	"fmt"
 	"github.com/go-playground/validator/v10"
 	"time"
 )
@@ -63,6 +65,16 @@ func (service *ArtistServiceImpl) CreateArtist(artist request.ArtistRequest) err
 		Banner:      artist.Banner,
 		VerifiedAt:  nil,
 		ArtistId:    utils.GenerateUUID(),
+	}
+	_, err = service.ArtistRepository.GetArtistByUserId(artist.UserId, false)
+	if err == nil {
+		fmt.Println(err)
+		return errors.New("verification is requested")
+	}
+
+	_, err = service.ArtistRepository.GetArtistByUserId(artist.UserId, true)
+	if err == nil {
+		return errors.New("you are verified")
 	}
 
 	err = service.ArtistRepository.CreateArtist(artistModel)

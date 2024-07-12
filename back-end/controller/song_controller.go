@@ -203,6 +203,63 @@ func (s SongController) CreateSong(ctx *gin.Context) {
 
 }
 
+func (s SongController) TestMusic(c *gin.Context) {
+	songId := c.Query("id")
+	music, err := s.SongService.GetSongById(songId)
+	if err != nil {
+		webResponse := response.WebResponse{
+			Code:    http.StatusBadRequest,
+			Message: err.Error(),
+			Data:    nil,
+		}
+		c.Header("Content-Type", "application/json")
+		c.JSON(http.StatusBadRequest, webResponse)
+		return
+	}
+	file, err := os.Open(music.File)
+	if err != nil {
+		c.String(http.StatusInternalServerError, "Error opening file")
+		return
+	}
+	defer file.Close()
+	fileInfo, err := file.Stat()
+	if err != nil {
+		c.String(http.StatusInternalServerError, "Error getting file info")
+		return
+	}
+	fileSize := fileInfo.Size()
+	// Assume 128 kbps bitrate, 10 seconds of audio
+	chunkSize := int64(128 * 1024 * 10 / 8)
+	rangeHeader := c.GetHeader("Range")
+	var start, end int64
+	if rangeHeader != "" {
+		_, err := fmt.Sscanf(rangeHeader, "bytes=%d-", &start)
+		if err != nil {
+			c.String(http.StatusBadRequest, "Invalid range header")
+			return
+		}
+	}
+	end = start + chunkSize
+	if end > fileSize {
+		end = fileSize
+	}
+	c.Header("Content-Type", "audio/mpeg")
+	c.Header("Accept-Ranges", "bytes")
+	c.Header("Content-Length", fmt.Sprintf("%d", end-start))
+	c.Header("Content-Range", fmt.Sprintf("bytes %d-%d/%d", start, end-1, fileSize))
+	c.Status(http.StatusPartialContent)
+	_, err = file.Seek(start, 0)
+	if err != nil {
+		c.String(http.StatusInternalServerError, "Error seeking file")
+		return
+	}
+	_, err = io.CopyN(c.Writer, file, end-start)
+	if err != nil {
+		c.String(http.StatusInternalServerError, "Error copying file")
+		return
+	}
+}
+
 func (s SongController) StreamMusic(c *gin.Context) {
 	songId := c.Query("id")
 	music, err := s.SongService.GetSongById(songId)
@@ -212,38 +269,99 @@ func (s SongController) StreamMusic(c *gin.Context) {
 			Message: err.Error(),
 			Data:    nil,
 		}
-
 		c.Header("Content-Type", "application/json")
 		c.JSON(http.StatusBadRequest, webResponse)
 		return
 	}
-
 	file, err := os.Open(music.File)
 	if err != nil {
-		panic(err)
+		c.String(http.StatusInternalServerError, "Error opening file")
+		return
 	}
-	defer func(file *os.File) {
-		err := file.Close()
+	defer file.Close()
+	fileInfo, err := file.Stat()
+	if err != nil {
+		c.String(http.StatusInternalServerError, "Error getting file info")
+		return
+	}
+	fileSize := fileInfo.Size()
+	chunkSize := int64(1024 * 200)
+	rangeHeader := c.GetHeader("Range")
+	var start, end int64
+	if rangeHeader != "" {
+		_, err := fmt.Sscanf(rangeHeader, "bytes=%d-", &start)
 		if err != nil {
-
+			c.String(http.StatusBadRequest, "Invalid range header")
+			return
 		}
-	}(file)
-
+	}
+	end = start + chunkSize
+	if end > fileSize {
+		end = fileSize
+	}
 	c.Header("Content-Type", "audio/mpeg")
-	c.Header("Transfer-Encoding", "chunked")
-	//c.Header("Content-Encoding", "gzip")
-
-	buffer := make([]byte, 1024*10)
-	for {
-		bytesRead, err := file.Read(buffer)
-		if err != nil && err != io.EOF {
-			panic(err)
-		}
-		if bytesRead == 0 {
-			break
-		}
-
-		c.Writer.Write(buffer[:bytesRead])
-		c.Writer.Flush()
+	c.Header("Accept-Ranges", "bytes")
+	c.Header("Content-Length", fmt.Sprintf("%d", end-start))
+	c.Header("Content-Range", fmt.Sprintf("bytes %d-%d/%d", start, end-1, fileSize))
+	c.Status(http.StatusPartialContent)
+	_, err = file.Seek(start, 0)
+	if err != nil {
+		c.String(http.StatusInternalServerError, "Error seeking file")
+		return
+	}
+	_, err = io.CopyN(c.Writer, file, end-start)
+	if err != nil {
+		c.String(http.StatusInternalServerError, "Error copying file")
+		return
 	}
 }
+
+//func (s SongController) StreamMusic(c *gin.Context) {
+//	songId := c.Query("id")
+//	music, err := s.SongService.GetSongById(songId)
+//	if err != nil {
+//		webResponse := response.WebResponse{
+//			Code:    http.StatusBadRequest,
+//			Message: err.Error(),
+//			Data:    nil,
+//		}
+//
+//		c.Header("Content-Type", "application/json")
+//		c.JSON(http.StatusBadRequest, webResponse)
+//		return
+//	}
+//
+//	file, err := os.Open(music.File)
+//	if err != nil {
+//		panic(err)
+//	}
+//	defer func(file *os.File) {
+//		err := file.Close()
+//		if err != nil {
+//
+//		}
+//	}(file)
+//
+//	c.Header("Content-Type", "audio/mpeg")
+//	c.Header("Transfer-Encoding", "chunked")
+//	//c.Header("Content-Encoding", "gzip")
+//	//c.Header("Content-Type", "text/html")
+//
+//	buffer := make([]byte, 1024)
+//	writer := c.Writer
+//	for {
+//		n, err := file.Read(buffer)
+//		if err != nil && err != io.EOF {
+//			c.String(http.StatusInternalServerError, "Error reading file.")
+//			return
+//		}
+//		if n == 0 {
+//			break
+//		}
+//		if _, err := writer.Write(buffer[:n]); err != nil {
+//			c.String(http.StatusInternalServerError, "Error writing chunk.")
+//			return
+//		}
+//		writer.(http.Flusher).Flush() // Flush the buffer to the client
+//	}
+//}

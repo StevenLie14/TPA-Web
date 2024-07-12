@@ -6,7 +6,6 @@ import (
 	"back-end/model"
 	"back-end/sse"
 	"back-end/utils"
-	"back-end/websockets"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"time"
@@ -18,79 +17,144 @@ func NewRouter(playlist *controller.PlaylistController, user *controller.UserCon
 	router.Use(cors.New(cors.Config{
 		AllowOrigins:     []string{"http://localhost:4000", "http://localhost:5173", "http://localhost:8080"},
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
-		AllowHeaders:     []string{"Content-Type", "Authorization", "Origin", "Accept"},
+		AllowHeaders:     []string{"Accept-Ranges", "Content-Type", "Content-Length", "Authorization", "Origin", "Accept", "Range"},
 		AllowCredentials: true,
 	}))
-
-	pool := websockets.NewPool()
-	go pool.Start()
 
 	router.Static("/public/images/", "./assets/images")
 	router.Static("/public/adv/", "./assets/advertise/image")
 	router.Static("/public/songs/", "./assets/songs")
 
-	router.GET("/ws/chat", pool.Chat)
+	authGroup := router.Group("/auth")
+	authGroup.Use(middleware.AuthMiddleware(user.UserService))
+	{
+		authGroup.GET("/user", user.GetCurrentUser)                     //v
+		authGroup.GET("/sse/notification-stream", h.StreamNotification) //v
+		authGroup.GET("/music", song.StreamMusic)                       //v
+		authGroup.GET("/adv", adv.StreamAdv)                            //v
+		authGroup.POST("/play/create", play.Create)                     //TODO : Check
+		authGroup.POST("/user/edit-prof", user.UpdateUserProfile)       //v
+		authGroup.GET("/user/current-user", user.GetCurrentUser)        //v
+		authGroup.GET("/user/get", user.GetUserById)
+		//authGroup.POST("/user/sign-out", user.SignOut)
+		authGroup.GET("/user/logout", user.Logout)               //v
+		authGroup.GET("/album/get-random", album.GetRandomAlbum) //
+		authGroup.GET("/play/get-last", play.Get8LastPlayedSongByUser)
+		authGroup.POST("/playlist/create", playlist.CreatePlaylist)
+		authGroup.GET("/get-following", follow.GetFollowing)
+		authGroup.GET("/user/get-all", user.GetAllUser)
+		authGroup.POST("/user/update-pic", user.UpdateProfilePicture)
+		authGroup.GET("/playlist", playlist.GetPlaylistByUserId)
+		authGroup.GET("/playlist-id", playlist.GetPlaylistById)
+		authGroup.POST("/playlist-detail", playlist.CreateDetail)
+		authGroup.DELETE("/playlist-detail", playlist.DeletePlaylistDetail)
+		authGroup.DELETE("/playlist", playlist.DeletePlaylist)
+		authGroup.GET("/get-follower", follow.GetFollower)
+		authGroup.GET("/get-mutual", follow.GetMutualFollowing)
+		authGroup.PUT("/follow", follow.Create)
+		authGroup.DELETE("/follow", follow.DeleteFollow)
+		authGroup.GET("/album/get-artist", album.GetAlbumByArtist)
+		authGroup.GET("/song/get-all", song.GetAllSong)
+		authGroup.GET("/song/get", song.GetSongById)
+		authGroup.GET("/song/get-by-artist", song.GetSongByArtist)
+		authGroup.GET("/song/get-by-album", song.GetSongByAlbum)
+		authGroup.GET("/queue/clear", queue.ClearQueue)
+		authGroup.POST("/queue/enqueue", queue.Enqueue)
+		authGroup.GET("/queue/dequeue", queue.Dequeue)
+		authGroup.GET("/queue/get", queue.GetQueue)
+		authGroup.GET("/queue/get-all", queue.GetAllQueue)
+		authGroup.POST("/queue/remove", queue.RemoveFromQueue)
+		authGroup.GET("/play/get-last-rec", play.GetLastPlayedSongByUser)
+		authGroup.GET("/artist/get", artist.GetArtistByUserId)
+		authGroup.GET("/artist/get-id", artist.GetArtistByArtistId)
+		authGroup.POST("/artist/create", artist.CreateArtist)
+
+		authGroup.GET("/artist/get-unverified", artist.GetUnverifiedArtist)
+		authGroup.POST("/setting/update", setting.UpdateSetting)
+		authGroup.GET("/search/get", search.Search)
+		authGroup.GET("/adv/get", adv.GetRandomAdvertisement)
+	}
+
+	artistGroup := router.Group("/artist")
+	artistGroup.Use(middleware.RoleMiddleware(user.UserService, "Artist"))
+	{
+		artistGroup.POST("/album/create", album.CreateAlbum)
+		artistGroup.POST("/song/create", song.CreateSong)
+
+	}
+
+	adminGroup := router.Group("/admin")
+	adminGroup.Use(middleware.RoleMiddleware(user.UserService, "Admin"))
+	{
+		adminGroup.PUT("/artist/update", artist.UpdateVerifyArtist)
+		adminGroup.DELETE("/artist/delete", artist.DeleteArtist)
+
+	}
 
 	router.POST("/user/login", user.Authenticate)
-	router.POST("/user/edit-prof", user.UpdateUserProfile)
-	router.GET("/user/current-user", user.GetCurrentUser)
 	router.POST("/user/update-ver", user.UpdateVerificationStatus)
 	router.GET("/auth/google/callback", user.GoogleCallback)
 	router.PUT("/user/register", user.Register)
-	router.GET("/user/get", user.GetUserById)
-	router.GET("/user/get-all", user.GetAllUser)
-	router.POST("/user/sign-out", user.SignOut)
 	router.POST("/user/forgot-password", user.Forgot)
 	router.POST("/user/reset-password", user.ResetPassword)
 	router.GET("/user/valid-verify", user.GetUserByVerifyLink)
-	router.GET("/user/logout", user.Logout)
-	router.POST("/user/update-pic", user.UpdateProfilePicture)
+	//router.POST("/user/edit-prof", user.UpdateUserProfile)
+	//router.GET("/user/current-user", user.GetCurrentUser)
+	//router.GET("/user/get", user.GetUserById)
+	//router.GET("/user/get-all", user.GetAllUser)
 
-	router.GET("/playlist", playlist.GetPlaylistByUserId)
-	router.GET("/playlist-id", playlist.GetPlaylistById)
-	router.POST("/playlist-detail", playlist.CreateDetail)
-	router.DELETE("/playlist-detail", playlist.DeletePlaylistDetail)
-	router.DELETE("/playlist", playlist.DeletePlaylist)
-	router.POST("/playlist/create", playlist.CreatePlaylist)
+	//router.GET("/user/logout", user.Logout)
+	//router.POST("/user/update-pic", user.UpdateProfilePicture)
 
-	router.GET("/get-following", follow.GetFollowing)
-	router.GET("/get-follower", follow.GetFollower)
-	router.GET("/get-mutual", follow.GetMutualFollowing)
-	router.PUT("/follow", follow.Create)
-	router.DELETE("/follow", follow.DeleteFollow)
+	//router.GET("/playlist", playlist.GetPlaylistByUserId)
+	//router.GET("/playlist-id", playlist.GetPlaylistById)
+	//router.POST("/playlist-detail", playlist.CreateDetail)
+	//router.DELETE("/playlist-detail", playlist.DeletePlaylistDetail)
+	//router.DELETE("/playlist", playlist.DeletePlaylist)
+	//router.POST("/playlist/create", playlist.CreatePlaylist)
 
-	router.GET("/album/get-artist", album.GetAlbumByArtist)
-	router.GET("/album/get-random", album.GetRandomAlbum)
-	router.POST("/album/create", album.CreateAlbum)
+	//router.GET("/get-following", follow.GetFollowing)
+	//router.GET("/get-follower", follow.GetFollower)
+	//router.GET("/get-mutual", follow.GetMutualFollowing)
+	//router.PUT("/follow", follow.Create)
+	//router.DELETE("/follow", follow.DeleteFollow)
 
-	router.POST("/song/create", song.CreateSong)
-	router.GET("/song/get-all", song.GetAllSong)
-	router.GET("/song/get", song.GetSongById)
-	router.GET("/song/get-by-artist", song.GetSongByArtist)
-	router.GET("/song/get-by-album", song.GetSongByAlbum)
+	//router.GET("/album/get-artist", album.GetAlbumByArtist)
+	//router.POST("/album/create", album.CreateAlbum)
+	//router.GET("/album/get-random", album.GetRandomAlbum)
 
-	router.GET("/queue/clear", queue.ClearQueue)
-	router.POST("/queue/enqueue", queue.Enqueue)
-	router.GET("/queue/dequeue", queue.Dequeue)
-	router.GET("/queue/get", queue.GetQueue)
-	router.GET("/queue/get-all", queue.GetAllQueue)
-	router.POST("/queue/remove", queue.RemoveFromQueue)
+	//router.POST("/song/create", song.CreateSong)
+	//router.GET("/song/get-all", song.GetAllSong)
+	//router.GET("/song/get", song.GetSongById)
+	//router.GET("/song/get-by-artist", song.GetSongByArtist)
+	//router.GET("/song/get-by-album", song.GetSongByAlbum)
 
-	router.GET("/play/get-last", play.Get8LastPlayedSongByUser)
-	router.GET("/play/get-last-rec", play.GetLastPlayedSongByUser)
+	//router.GET("/queue/clear", queue.ClearQueue)
+	//router.POST("/queue/enqueue", queue.Enqueue)
+	//router.GET("/queue/dequeue", queue.Dequeue)
+	//router.GET("/queue/get", queue.GetQueue)
+	//router.GET("/queue/get-all", queue.GetAllQueue)
+	//router.POST("/queue/remove", queue.RemoveFromQueue)
 
-	router.GET("/artist/get", artist.GetArtistByUserId)
-	router.GET("/artist/get-id", artist.GetArtistByArtistId)
-	router.POST("/artist/create", artist.CreateArtist)
-	router.PUT("/artist/update", artist.UpdateVerifyArtist)
-	router.DELETE("/artist/delete", artist.DeleteArtist)
-	router.GET("/artist/get-unverified", artist.GetUnverifiedArtist)
+	//router.GET("/play/get-last", play.Get8LastPlayedSongByUser)
+	//router.GET("/play/get-last-rec", play.GetLastPlayedSongByUser)
+	//router.POST("/play/create", play.Create)
 
-	router.POST("/setting/update", setting.UpdateSetting)
+	//router.GET("/artist/get", artist.GetArtistByUserId)
+	//router.GET("/artist/get-id", artist.GetArtistByArtistId)
+	//router.POST("/artist/create", artist.CreateArtist)
+	//router.PUT("/artist/update", artist.UpdateVerifyArtist)
+	//router.DELETE("/artist/delete", artist.DeleteArtist)
+	//router.GET("/artist/get-unverified", artist.GetUnverifiedArtist)
+	//
+	//router.POST("/setting/update", setting.UpdateSetting)
+	//
+	//router.GET("/search/get", search.Search)
+	//
+	//router.GET("/adv/get", adv.GetRandomAdvertisement)
 
-	router.GET("/search/get", search.Search)
-
-	router.GET("/adv/get", adv.GetRandomAdvertisement)
+	//router.GET("/music", song.StreamMusic)
+	//router.GET("/adv", adv.StreamAdv)
 
 	//careerGroup := router.Group("/career")
 	//careerGroup.Use(middleware.RoleMiddleware(user.UserService, "JLA"))
@@ -99,16 +163,9 @@ func NewRouter(playlist *controller.PlaylistController, user *controller.UserCon
 	//	careerGroup.GET("/", career.FindAll)
 	//}
 
-	authGroup := router.Group("/auth")
-	authGroup.Use(middleware.AuthMiddleware(user.UserService))
-	{
-		authGroup.GET("/user", user.GetCurrentUser)
-	}
-
 	//router.POST("/career", middleware.AuthMiddleware(user.UserService), career.Create)
 	//router.GET("/career", middleware.RoleMiddleware(user.UserService, "JLA"), career.FindAll)
-
-	router.GET("sse/notification-stream", h.StreamNotification)
+	//router.GET("sse/notification-stream", h.StreamNotification)
 
 	//TESTING
 	router.GET("/send", func(c *gin.Context) {
@@ -123,37 +180,7 @@ func NewRouter(playlist *controller.PlaylistController, user *controller.UserCon
 		}
 	})
 
-	router.GET("/music", song.StreamMusic)
-	router.GET("/adv", adv.StreamAdv)
+	//router.GET("/test", song.TestMusic)
 
 	return router
 }
-
-//	router.GET("/stream", func(c *gin.Context) {
-//		// Set necessary headers for SSE
-//		c.Writer.Header().Set("Content-Type", "text/event-stream")
-//		c.Writer.Header().Set("Cache-Control", "no-cache")
-//		c.Writer.Header().Set("Connection", "keep-alive")
-//
-//		// Use the gin context's stream method to continuously write data to the client
-//		c.Stream(func(w io.Writer) bool {
-//			for {
-//				select {}
-//				// Write some data to the client
-//				fmt.Fprintf(w, "data: %s\n\n", time.Now().Format(time.RFC3339))
-//
-//				// Flush the data immediately instead of buffering it
-//				if f, ok := w.(http.Flusher); ok {
-//					f.Flush()
-//				}
-//
-//				// Sleep for a bit to simulate some delay
-//				time.Sleep(time.Second)
-//
-//				// Check if the client has closed the connection
-//				if c.Writer.Status() != http.StatusOK {
-//					return false
-//				}
-//			}
-//		})
-//	})

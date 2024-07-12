@@ -1863,12 +1863,24 @@ footer{
 
   .navbar{
     width: 10%;
+    .logo{
+    }
     ul{
       li{
-        padding: 4px;
+        padding: 1px;
         margin: 0;
+        align-items: start;
         .link{
+          width: 30px;
+          height: 30px;
+          margin: 0;
           display: none;
+        }
+        .link{
+          p{
+            display: none;
+
+          }
         }
         svg{
           margin: 8px;

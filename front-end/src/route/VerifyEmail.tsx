@@ -20,10 +20,11 @@ export const VerifyEmail = () => {
         })
         .then((res) => {
           console.log(res);
+          navigate("/login");
         })
         .catch((err: unknown) => {
           console.log(err);
-          navigate("/login");
+          navigate("/404");
         });
     }
   }, [id]);
